@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asignador de Comunas — CABA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const COMUNAS_GEO = {"type": "FeatureCollection", "features": [{"id": "0", "type": "Feature", "properties": {"comuna": 1, "barrios": "Constitucion, San Telmo, Monserrat, Retiro, Puerto Madero, San Nicolas"}, "geometry": {"type": "MultiPolygon", "coordinates": [[[[-58.348918024943885, -34.616976361762624], [-58.35016623891, -34.617507344526686], [-58.34997367686602, -34.618721740780664], [-58.35269850298576, -34.619775295350834], [-58.3551455569975, -34.61955482270506], [-58.3560162075528, -34.617610896798965], [-58.363201122688885, -34.625139574833234], [-58.36797657673252, -34.625199763135186], [-58.36795049636793, -34.62714666538916], [-58.37066323406008, -34.62949785076114], [-58.37096872656504, -34.62665144696798], [-58.37456562467141, -34.62680369522484], [-58.379049190418385, -34.629337746977214], [-58.378626122498254, -34.63050324041974], [-58.38014808978738, -34.63303593551952], [-58.38125494654735, -34.63307428411365], [-58.38133730586496, -34.63084939427818], [-58.383396204704034, -34.632224785746125], [-58.39035697026888, -34.634128602067136], [-58.392935333707776, -34.59964214930214], [-58.386868203764436, -34.59929786043728], [-58.38795472885699, -34.59165341346785], [-58.38369087887974, -34.587505583241736], [-58.38696844658319, -34.58355674501224], [-58.39164933888166, -34.58083641962399], [-58.389869341696375, -34.578207133668116], [-58.38357629120498, -34.5782407460442], [-58.379841464837774, -34.58016729947032], [-58.375126880746755, -34.5805254281304], [-58.373977174409106, -34.57910768707074], [-58.37671626106816, -34.57755069258156], [-58.37428889158243, -34.57870957317203], [-58.36795553859234, -34.578211416651854], [-58.365251454121285, -34.58015608946327], [-58.37056365412353, -34.58083540230601], [-58.368975289100625, -34.58173392430387], [-58.36162502808646, -34.581152385208505], [-58.361417757287526, -34.58296893642792], [-58.36614851142904, -34.58356375333382], [-58.36494652313514, -34.584504548357486], [-58.35992042240929, -34.5841233530128], [-58.359729103818744, -34.58592406871261], [-58.36364863874597, -34.58624596742896], [-58.363527535469785, -34.58746271693558], [-58.35960762309352, -34.58718936741614], [-58.359461950233104, -34.58808498390018], [-58.36074617289418, -34.58894111618002], [-58.36799692103641, -34.59001338072157], [-58.364371922353534, -34.59426982427037], [-58.367089402500184, -34.59140365964746], [-58.366388721545, -34.59299041504882], [-58.3678749988485, -34.59195878341], [-58.367153854179, -34.593308098547325], [-58.369083656398125, -34.59416162876316], [-58.36791353151089, -34.59747857900049], [-58.36649790025221, -34.597418775285895], [-58.366093909072035, -34.59820853822204], [-58.36615974297176, -34.597388831731905], [-58.36383556620314, -34.597202842063325], [-58.364105689289474, -34.59531635472929], [-58.36148309785111, -34.595132896250064], [-58.361245076454395, -34.59528039892109], [-58.36384791399487, -34.59548607637648], [-58.36342174838141, -34.59666429173523], [-58.36033448322037, -34.59547098800621], [-58.36110346649097, -34.59510585148152], [-58.35414917509483, -34.59466946306939], [-58.35096485791214, -34.59515023880387], [-58.3567689269046, -34.594935285715174], [-58.353442385181246, -34.59669698000774], [-58.346783015009365, -34.60236350520466], [-58.34587208667433, -34.60670678603408], [-58.34128636791876, -34.61008683200916], [-58.33986582955643, -34.61487450645146], [-58.33987707464777, -34.61609972445709], [-58.34115278623445, -34.61702138576532], [-58.344862487949804, -34.61773245468687], [-58.348918024943885, -34.616976361762624]]], [[[-58.355437805409146, -34.59190175313032], [-58.35818646256386, -34.57934265979816], [-58.36764893308296, -34.5738994597077], [-58.36973124629536, -34.5739978012019], [-58.36758683247869, -34.573864488886144], [-58.358125063733176, -34.57930942635149], [-58.355437805409146, -34.59190175313032]]]]}}, {"id": "1", "type": "Feature", "properties": {"comuna": 2, "barrios": "Recoleta"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.38035794268091, -34.570103317355645], [-58.379960350933935, -34.568203880754226], [-58.3681686748618, -34.56723723750758], [-58.379785272678646, -34.568310417331524], [-58.38023422068042, -34.56984564966574], [-58.38003022933984, -34.57037267398053], [-58.37877614841892, -34.570355047329514], [-58.37616391128904, -34.57165990605206], [-58.36176174534931, -34.570646552283726], [-58.359845713592144, -34.57174786314672], [-58.3621041645752, -34.57074504955341], [-58.37614935554656, -34.57180581775957], [-58.371222567730086, -34.574745118517924], [-58.37117491294684, -34.574903083579144], [-58.378684759041185, -34.570480861923144], [-58.38036111212539, -34.57047919907209], [-58.37828309008249, -34.57274684626169], [-58.383585683090615, -34.57341727775679], [-58.3818168163524, -34.57441578676828], [-58.375443919500846, -34.57393073573305], [-58.37070541065229, -34.57704285616661], [-58.37671626106816, -34.57755069258156], [-58.373977174409106, -34.57910768707074], [-58.375126880746755, -34.5805254281304], [-58.379841464837774, -34.58016729947032], [-58.38357629120498, -34.5782407460442], [-58.389869341696375, -34.578207133668116], [-58.39164933888166, -34.58083641962399], [-58.38696844658319, -34.58355674501224], [-58.38369087887974, -34.587505583241736], [-58.38795472885699, -34.59165341346785], [-58.386868203764436, -34.59929786043728], [-58.39872726394246, -34.59976535365024], [-58.40201234297378, -34.59937478760249], [-58.40451071644731, -34.598041065991], [-58.41600403600113, -34.597859933549024], [-58.414397287745764, -34.59405930920153], [-58.40617642820399, -34.58346470960735], [-58.40194733042239, -34.58343181108031], [-58.40054799256822, -34.584477245354066], [-58.396564195981334, -34.578512233282034], [-58.4026506816133, -34.574146009020055], [-58.39972018078613, -34.57081264566094], [-58.40013108172107, -34.5693546362421], [-58.39521040516281, -34.57219633516647], [-58.392988738896264, -34.57198170984931], [-58.38794483725291, -34.57487735658503], [-58.386648203813365, -34.573230796984284], [-58.39126553617799, -34.57061099020856], [-58.3904950886105, -34.56942898897008], [-58.38146827466691, -34.56842771226113], [-58.38035794268091, -34.570103317355645]]]}}, {"id": "2", "type": "Feature", "properties": {"comuna": 3, "barrios": "San Cristobal, Balvanera"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.41192253140974, -34.59800821515629], [-58.40451071644731, -34.598041065991], [-58.40201234297378, -34.59937478760249], [-58.39872726394246, -34.59976535365024], [-58.392935333707776, -34.59964214930214], [-58.39117418686142, -34.62725739800156], [-58.41178281112581, -34.63036027048347], [-58.4128735978394, -34.61412102787183], [-58.41447055478863, -34.61074128013696], [-58.41466351449463, -34.60819498354091], [-58.41192253140974, -34.59800821515629]]]}}, {"id": "3", "type": "Feature", "properties": {"comuna": 4, "barrios": "Barracas, La Boca, Parque Patricios, Nueva Pompeya"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.355206411665044, -34.61943507715094], [-58.349578105669245, -34.619794673355266], [-58.3478443939438, -34.61895545622068], [-58.34461325229947, -34.61899051514879], [-58.34519826639902, -34.61983633083844], [-58.346339028179955, -34.61921019557378], [-58.34715670335587, -34.619993611254834], [-58.34593849276325, -34.622959824469206], [-58.34548549103092, -34.62152672547246], [-58.34407006836646, -34.62176003457747], [-58.34378856992695, -34.61883046679264], [-58.33859342720191, -34.61864336782163], [-58.3375194974124, -34.620014172485405], [-58.33721667291444, -34.62252946490124], [-58.34303756808641, -34.622714440810626], [-58.34237750571072, -34.623377718966225], [-58.3400529983697, -34.62324135613477], [-58.337027693970654, -34.62489012336849], [-58.33515871099866, -34.627099027774285], [-58.336204302121324, -34.62818317588059], [-58.33928395026463, -34.6288971019111], [-58.34245139746348, -34.62617352063797], [-58.344277550703744, -34.62637863731788], [-58.341405728899375, -34.628897793970914], [-58.34251414819407, -34.62945980994724], [-58.34458192964244, -34.62800329058018], [-58.345378383885944, -34.62866941572975], [-58.34705532849174, -34.62728622339436], [-58.34878983592163, -34.62908795549466], [-58.347931785530314, -34.63115757195418], [-58.346103125871046, -34.63166360858981], [-58.34907377940418, -34.63256081916418], [-58.351252329532755, -34.631257594236224], [-58.352387635098474, -34.629014982278306], [-58.36177270069493, -34.623643256692006], [-58.361267640712036, -34.62468892683846], [-58.35469455582076, -34.62923314779469], [-58.35276622900297, -34.63356686204232], [-58.35325206376397, -34.63511462659427], [-58.35803214647837, -34.63920578608744], [-58.36144408440404, -34.63987110613079], [-58.358130708101854, -34.64187269937199], [-58.35760360074182, -34.64498371366717], [-58.36239907199249, -34.64814933953357], [-58.364338595853205, -34.64822755912233], [-58.3696618484966, -34.65133795769121], [-58.36979205642941, -34.6535823682468], [-58.37412390902166, -34.656768650021675], [-58.385178826856205, -34.65785043527689], [-58.38801948498511, -34.66033243429376], [-58.39318379781519, -34.66229740953415], [-58.39728787327114, -34.66196437502627], [-58.40253489805445, -34.65942620729705], [-58.407232234297126, -34.66000485318271], [-58.41240951035112, -34.658384512897726], [-58.420026974944314, -34.66017063344226], [-58.424043891438195, -34.6620516470974], [-58.42674830161658, -34.65867794737795], [-58.43443587935198, -34.653117109717876], [-58.430432458920855, -34.649878374808424], [-58.43492550133184, -34.64624102483316], [-58.432110074021494, -34.645167863527476], [-58.43234695414734, -34.64174550061151], [-58.41126390426368, -34.638103577189355], [-58.41049206922789, -34.63524181008535], [-58.411782811125846, -34.63036027048347], [-58.39117418686142, -34.62725739800156], [-58.39035697026888, -34.634128602067136], [-58.383396204704034, -34.632224785746125], [-58.38133730586496, -34.63084939427818], [-58.381254946547365, -34.63307428411365], [-58.38014808978738, -34.63303593551952], [-58.378626122498254, -34.63050324041974], [-58.379049190418385, -34.629337746977214], [-58.375577944126384, -34.62730591248493], [-58.37096872656504, -34.62665144696798], [-58.370663234060096, -34.62949785076114], [-58.36795049636794, -34.62714666538916], [-58.36797657673252, -34.6251997631352], [-58.3632011226889, -34.62513957483324], [-58.3560162075528, -34.617610896798965], [-58.355206411665044, -34.61943507715094]]]}}, {"id": "4", "type": "Feature", "properties": {"comuna": 5, "barrios": "Almagro, Boedo"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.4128735978394, -34.61412102787183], [-58.411524050933046, -34.63286110190779], [-58.41049206922788, -34.63524181008535], [-58.41126390426364, -34.63810357718933], [-58.42349481677904, -34.64020460971672], [-58.4292553500569, -34.61511051469348], [-58.43003137426663, -34.61545404367605], [-58.43067198877805, -34.60594640975917], [-58.43333687771965, -34.60267859363733], [-58.42943185651599, -34.599131389417884], [-58.42678829291573, -34.5979494812089], [-58.41192253140974, -34.59800821515629], [-58.41466351449463, -34.60819498354091], [-58.41447055478863, -34.61074128013696], [-58.4128735978394, -34.61412102787183]]]}}, {"id": "5", "type": "Feature", "properties": {"comuna": 6, "barrios": "Caballito"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.430671988778066, -34.60594640975917], [-58.43003137426665, -34.61545404367607], [-58.4292553500569, -34.61511051469348], [-58.42675870469671, -34.62700303506082], [-58.45157819570983, -34.630643688528856], [-58.46270615195231, -34.60737818546292], [-58.458475643600124, -34.6044970632697], [-58.446249635039464, -34.607620731773416], [-58.43920415657378, -34.605587963253505], [-58.43333687771965, -34.60267859363734], [-58.430671988778066, -34.60594640975917]]]}}, {"id": "6", "type": "Feature", "properties": {"comuna": 7, "barrios": "Flores, Parque Chacabuco"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.459449971836904, -34.61389068145688], [-58.45157819570983, -34.630643688528856], [-58.42675870469671, -34.62700303506082], [-58.423494816779055, -34.64020460971673], [-58.43234695414734, -34.64174550061151], [-58.432110074021494, -34.645167863527476], [-58.43492550133184, -34.64624102483316], [-58.430432458920855, -34.649878374808424], [-58.438007702623175, -34.65580743858055], [-58.44332595519617, -34.65119399460118], [-58.45463778581161, -34.65082722194169], [-58.455063296518226, -34.652303458850824], [-58.46040313335783, -34.65681049338795], [-58.46703464979254, -34.65147244740455], [-58.46300023686062, -34.64617448926002], [-58.469243330807224, -34.64140132363981], [-58.47780801107838, -34.62238921186758], [-58.468636408887924, -34.61756665932689], [-58.459449971836904, -34.61389068145688]]]}}, {"id": "7", "type": "Feature", "properties": {"comuna": 8, "barrios": "Villa Lugano, Villa Riachuelo, Villa Soldati"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.45463778581161, -34.65082722194169], [-58.44332595519617, -34.65119399460118], [-58.438007702623175, -34.65580743858055], [-58.43443587935198, -34.653117109717876], [-58.42674830161658, -34.65867794737795], [-58.424043891438195, -34.6620516470974], [-58.427398015284595, -34.66488252103516], [-58.4615856913617, -34.705355483937794], [-58.50252527504022, -34.674512432484015], [-58.49703952515368, -34.67118424077124], [-58.48895242145443, -34.66335244324564], [-58.485945451344016, -34.66245218909218], [-58.47881829373255, -34.657848560507574], [-58.47251602641476, -34.66277676243772], [-58.47057138882731, -34.65843091443367], [-58.46955682463585, -34.65910942700471], [-58.46765625455309, -34.65751952387692], [-58.46443135241803, -34.66005337230465], [-58.455063296518226, -34.652303458850824], [-58.45463778581161, -34.65082722194169]]]}}, {"id": "8", "type": "Feature", "properties": {"comuna": 9, "barrios": "Parque Avellaneda, Mataderos, Liniers"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.51925301107606, -34.63301496355282], [-58.51486319473526, -34.63320792677432], [-58.50681882923088, -34.635817173289944], [-58.50567176664867, -34.63672260169123], [-58.51050891943808, -34.63737563432314], [-58.50982153516651, -34.640013005499306], [-58.50229906905262, -34.64582266350144], [-58.49713742592192, -34.64341397409885], [-58.49530206457031, -34.644852439732254], [-58.478546192563456, -34.63699885547769], [-58.476073061293455, -34.63893922752052], [-58.47130386272256, -34.636659753938936], [-58.469243330807224, -34.64140132363981], [-58.46300023686062, -34.64617448926002], [-58.46703464979254, -34.65147244740455], [-58.46040313335783, -34.65681049338795], [-58.46443135241803, -34.66005337230465], [-58.46765625455309, -34.65751952387692], [-58.46955682463585, -34.65910942700471], [-58.47057138882731, -34.65843091443367], [-58.47251602641476, -34.66277676243772], [-58.47881829373255, -34.657848560507574], [-58.485945451344016, -34.66245218909218], [-58.48895242145443, -34.66335244324564], [-58.49703952515368, -34.67118424077124], [-58.50252527504022, -34.674512432484015], [-58.52920705002191, -34.65430347405725], [-58.53035752579122, -34.63480022662674], [-58.524299104116515, -34.634475586034455], [-58.51925301107606, -34.63301496355282]]]}}, {"id": "9", "type": "Feature", "properties": {"comuna": 10, "barrios": "Floresta, Monte Castro, Velez Sarsfield, Versalles, Villa Luro, Villa Real"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.49557308272514, -34.61439626909074], [-58.482743193734414, -34.62463474854925], [-58.47780801107838, -34.62238921186758], [-58.47130386272256, -34.636659753938936], [-58.476073061293455, -34.63893922752052], [-58.478546192563456, -34.63699885547769], [-58.49530206457031, -34.644852439732254], [-58.49713742592192, -34.64341397409885], [-58.50229906905262, -34.64582266350144], [-58.50982153516651, -34.640013005499306], [-58.51050891943808, -34.63737563432314], [-58.50567176664867, -34.63672260169123], [-58.50681882923088, -34.635817173289944], [-58.51486319473526, -34.63320792677432], [-58.52023989015835, -34.63280211033947], [-58.52068660950893, -34.63382592736448], [-58.53035752579122, -34.63480022662674], [-58.53151730936994, -34.61549898106118], [-58.5294676849028, -34.61090106159131], [-58.51694927550724, -34.62022036334769], [-58.513046049005155, -34.616736904702016], [-58.500192416685685, -34.60913108464406], [-58.49557308272514, -34.61439626909074]]]}}, {"id": "10", "type": "Feature", "properties": {"comuna": 11, "barrios": "Villa Del Parque, Villa Devoto, Villa Gral. Mitre, Villa Santa Rita"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.498384938980664, -34.59637325618735], [-58.483456873969345, -34.59776357440074], [-58.47639330714976, -34.60020498085571], [-58.47749970818132, -34.600830501972816], [-58.47401769558466, -34.605316418353674], [-58.46891355826054, -34.60186572269597], [-58.458475643600124, -34.6044970632697], [-58.46270615195231, -34.60737818546292], [-58.459449971836904, -34.61389068145688], [-58.468636408887924, -34.61756665932689], [-58.482743193734414, -34.62463474854925], [-58.49557308272514, -34.61439626909074], [-58.500192416685685, -34.60913108464406], [-58.513046049005155, -34.616736904702016], [-58.51694927550724, -34.62022036334769], [-58.5294676849028, -34.61090106159131], [-58.515535768574196, -34.58127414707184], [-58.50354366270086, -34.59445578824522], [-58.498384938980664, -34.59637325618735]]]}}, {"id": "11", "type": "Feature", "properties": {"comuna": 12, "barrios": "Villa Urquiza, Villa Pueyrredon, Saavedra, Coghlan"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.50331123523567, -34.59386184024049], [-58.515535768574196, -34.58127414707184], [-58.500551668790834, -34.549495920968496], [-58.47595455466846, -34.53863739298882], [-58.46819097058801, -34.54894654457668], [-58.47443734115173, -34.55242741425036], [-58.46703884337079, -34.56132137710532], [-58.467685559876344, -34.561693617501696], [-58.466491862186054, -34.56219648199534], [-58.47336982768101, -34.56666768335338], [-58.46808280219983, -34.57291482378605], [-58.50331123523567, -34.59386184024049]]]}}, {"id": "12", "type": "Feature", "properties": {"comuna": 13, "barrios": "Belgrano, Nuñez, Colegiales"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.456719458022626, -34.52674828843891], [-58.45171998987577, -34.53063138767528], [-58.45496648619892, -34.53527636720969], [-58.45882203224351, -34.5371327693483], [-58.4585597087675, -34.53732575059548], [-58.45386545717745, -34.535044987740655], [-58.45136365920483, -34.53171744765763], [-58.44996447156508, -34.535086292029625], [-58.45407181828169, -34.536539766242264], [-58.45483617470599, -34.537446594462054], [-58.45408617314288, -34.53879108866282], [-58.45217041798593, -34.53956419510006], [-58.44906714077152, -34.53555990218353], [-58.449395178824744, -34.53632177623105], [-58.448567984279904, -34.53740071123808], [-58.44638441809379, -34.53600964688377], [-58.443863687174854, -34.53614484618917], [-58.441584261129016, -34.537626475622886], [-58.440784519721525, -34.540304720119714], [-58.44025715920719, -34.539209149983634], [-58.43923700376901, -34.54013637384451], [-58.43756043932938, -34.5398024158173], [-58.43420302443965, -34.54186596482963], [-58.434920928280626, -34.54200207229259], [-58.434624119666594, -34.54258212160814], [-58.43187689030702, -34.54419976188775], [-58.43004895936123, -34.54687689740354], [-58.429495996518405, -34.54665800086476], [-58.42963204866005, -34.54863059155689], [-58.42706028990311, -34.548040483749205], [-58.424743215242046, -34.54935092068855], [-58.42669533178922, -34.55205414353826], [-58.429401564156706, -34.550956446287785], [-58.43098714459271, -34.55112501627761], [-58.4344261987988, -34.55305621010804], [-58.434113729529074, -34.5539635506837], [-58.44106131376858, -34.55790250180212], [-58.44138828018453, -34.55882208848241], [-58.44033066344391, -34.560562003501744], [-58.43798307694816, -34.56176290332876], [-58.434960847039065, -34.56179829631029], [-58.43540543361918, -34.562543094594], [-58.44116517463695, -34.56214001582999], [-58.44904676119445, -34.567859827048814], [-58.44074720899485, -34.57211211395189], [-58.44397422449456, -34.57537012594294], [-58.43994155147019, -34.57855265139006], [-58.44445103343923, -34.583176475673376], [-58.455401307744665, -34.57907626071809], [-58.4602266652503, -34.5783011108979], [-58.463188835027395, -34.575111026455005], [-58.46736584353381, -34.57250216497175], [-58.46808280219982, -34.57291482378605], [-58.473369827681005, -34.56666768335336], [-58.466491862186054, -34.56219648199534], [-58.467685559876344, -34.561693617501696], [-58.46703884337077, -34.56132137710532], [-58.47443734115173, -34.55242741425036], [-58.46819097058801, -34.54894654457668], [-58.47595455466846, -34.53863739298881], [-58.46379760243491, -34.53326774829826], [-58.45862476200739, -34.526709704738195], [-58.456719458022626, -34.52674828843891]]]}}, {"id": "13", "type": "Feature", "properties": {"comuna": 14, "barrios": "Palermo"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.409522256094505, -34.55662862862211], [-58.40921045859479, -34.558475802083706], [-58.40391075999524, -34.563484736075736], [-58.398789758489, -34.56075319053227], [-58.403936053308804, -34.56356643305699], [-58.402605003947706, -34.56396129888846], [-58.40111744027096, -34.563338177498586], [-58.400713525195584, -34.56430598905434], [-58.39921117582483, -34.56366546818596], [-58.39703979420499, -34.56500660495255], [-58.39687887251301, -34.56583422800322], [-58.400190826728426, -34.56901765878399], [-58.39698334239346, -34.56667476841259], [-58.39284439159741, -34.57223851937547], [-58.39521040516281, -34.57219633516647], [-58.40013108172107, -34.5693546362421], [-58.39972018078613, -34.57081264566094], [-58.4026506816133, -34.574146009020055], [-58.396564195981334, -34.578512233282034], [-58.40054799256822, -34.584477245354066], [-58.40194733042239, -34.58343181108031], [-58.40617642820399, -34.58346470960735], [-58.414397287745764, -34.59405930920153], [-58.41600403600113, -34.597859933549024], [-58.423370464395774, -34.597753095799106], [-58.42695332551264, -34.5962157706669], [-58.44478808996422, -34.58451915727811], [-58.44343418710488, -34.581802697596906], [-58.43994155147019, -34.57855265139006], [-58.44397422449456, -34.57537012594294], [-58.44074720899485, -34.57211211395189], [-58.44904676119445, -34.567859827048814], [-58.44116517463695, -34.56214001582999], [-58.43486149017645, -34.56209525140676], [-58.43825099008908, -34.561689928488875], [-58.440492011577994, -34.560426044269704], [-58.44138828018453, -34.55882208848241], [-58.44044561932123, -34.557309275903], [-58.434113729529074, -34.5539635506837], [-58.4344261987988, -34.55305621010804], [-58.43098714459271, -34.55112501627761], [-58.425668022697465, -34.55197218736329], [-58.42473594055341, -34.54902164123396], [-58.42418071379557, -34.54927451314631], [-58.425704542147976, -34.55216363570151], [-58.414055575661855, -34.55478427457651], [-58.409522256094505, -34.55662862862211]]]}}, {"id": "14", "type": "Feature", "properties": {"comuna": 15, "barrios": "Villa Ortuzar, Agronomia, Paternal, Parque Chas, Chacarita, Villa Crespo"}, "geometry": {"type": "Polygon", "coordinates": [[[-58.444588211785494, -34.58467138375304], [-58.423370464395774, -34.597753095799106], [-58.42777627037006, -34.598334144887495], [-58.432243441632785, -34.60213894439448], [-58.43920415657378, -34.605587963253505], [-58.44624963503945, -34.607620731773444], [-58.46891355826054, -34.60186572269597], [-58.47401769558464, -34.605316418353674], [-58.47749970818131, -34.600830501972816], [-58.47639330714973, -34.60020498085571], [-58.483456873969345, -34.59776357440074], [-58.49717523922212, -34.596822971770756], [-58.50354366270086, -34.59445578824522], [-58.488794156181385, -34.584824030446214], [-58.46736584353381, -34.57250216497175], [-58.463188835027395, -34.575111026455005], [-58.4602266652503, -34.5783011108979], [-58.455401307744665, -34.57907626071809], [-58.444402238746825, -34.583197455104525], [-58.444588211785494, -34.58467138375304]]]}}]};
+
+</script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: #0f1117; color: #e8eaf0; }
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+  --accent: #00d4aa; --accent2: #7c6af7; --text: #e8eaf0;
+  --muted: #6b7080; --yellow: #f5c542;
+}
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+  height: 54px; flex-shrink: 0;
+}
+header h1 { font-size: 16px; font-weight: 700; }
+header h1 span { color: var(--accent); }
+.badge { background: var(--accent); color: #000; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.body-wrap { display: flex; height: calc(100vh - 54px); }
+.sidebar { width: 370px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border); overflow: hidden; }
+.map-area { flex: 1; position: relative; }
+#map { position: absolute; inset: 0; }
+.tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.tab { flex: 1; padding: 11px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .2s; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-pane { display: none; flex-direction: column; flex: 1; overflow: hidden; min-height: 0; }
+.tab-pane.active { display: flex; }
+.panel-section { padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+.upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(0,212,170,.05); }
+.upload-zone input { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; }
+.upload-zone p { font-size: 12px; color: var(--muted); }
+.upload-zone p strong { color: var(--accent); }
+.upload-icon { font-size: 24px; margin-bottom: 6px; }
+.col-selector { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.col-selector label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.col-selector select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 5px 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 6px; }
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-sec { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-sec:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.stat-card .num { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.stat-card .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.stat-card.a .num { color: var(--accent); }
+.stat-card.w .num { color: var(--yellow); }
+.table-wrap { flex: 1; overflow-y: auto; min-height: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th { background: var(--bg); padding: 7px 10px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); position: sticky; top: 0; border-bottom: 1px solid var(--border); }
+tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; }
+tbody tr:hover { background: rgba(255,255,255,.03); }
+.cb { display: inline-block; padding: 2px 7px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; }
+.no-data { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width .3s; }
+.msg { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; min-height: 16px; }
+.insp-list { flex: 1; overflow-y: auto; padding: 10px 14px; min-height: 0; }
+.insp-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.insp-name { font-weight: 700; font-size: 13px; }
+.insp-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.insp-btns { display: flex; gap: 6px; margin-top: 8px; }
+.insp-btn { border: none; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.leaflet-popup-content-wrapper { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans',sans-serif; border-radius: 10px; }
+.leaflet-popup-tip { background: var(--surface); }
+.popup-title { font-weight: 700; font-size: 13px; color: var(--accent); }
+.popup-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Asignador de Comunas — <span>CABA</span></h1>
+  <div class="badge">GCBA</div>
+</header>
+<div class="body-wrap">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">📍 Asignador</div>
+      <div class="tab" onclick="switchTab(1)">👷 Por Inspector</div>
+      <div class="tab" onclick="switchTab(2)">🔀 Asignar Inspectores</div>
+      <div class="tab" onclick="switchTab(3)">🌐 Batch</div>
+    </div>
+
+    <!-- TAB 0: Asignador -->
+    <div class="tab-pane active" id="pane0">
+      <div class="panel-section">
+        <div class="section-title">📂 Cargar CSV / Excel</div>
+        <div class="upload-zone" id="dz0" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+          <div class="upload-icon">📄</div>
+          <p>Arrastrá o <strong>hacé clic aquí</strong></p>
+          <p style="font-size:10px;margin-top:3px">CSV o Excel con columna de direcciones</p>
+        </div>
+        <div id="col-config" style="display:none;margin-top:10px">
+          <div class="col-selector"><label>Columna:</label><select id="colSelect"></select></div>
+          <div class="col-selector">
+            <label>Modo:</label>
+            <select id="modoSelect">
+              <option value="comuna">📍 Agregar comuna</option>
+              <option value="normalizar">✏️ Normalizar direcciones</option>
+              <option value="ambos">⚡ Normalizar y agregar comuna</option>
+            </select>
+          </div>
+          <button class="btn" id="processBtn" onclick="processData()">▶ Procesar</button>
+          <button class="btn btn-sec" onclick="downloadResult()">⬇ Descargar Excel</button>
+        </div>
+        <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="msg" id="statusMsg"></div>
+      </div>
+      <div class="panel-section">
+        <div class="section-title">📊 Resumen</div>
+        <div class="stats-grid">
+          <div class="stat-card a"><div class="num" id="statTotal">—</div><div class="lbl">Total registros</div></div>
+          <div class="stat-card a"><div class="num" id="statAsig">—</div><div class="lbl">Asignados</div></div>
+          <div class="stat-card w"><div class="num" id="statSinNum">—</div><div class="lbl">Sin número</div></div>
+          <div class="stat-card"><div class="num" id="statComunas">—</div><div class="lbl">Comunas presentes</div></div>
+        </div>
+      </div>
+      <div style="padding:10px 14px 6px;flex-shrink:0"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">📋 Resultados</span></div>
+      <div class="table-wrap">
+        <div class="no-data" id="emptyMsg">Cargá un archivo para comenzar</div>
+        <table id="resultsTable" style="display:none">
+          <thead id="tableHead"><tr><th>#</th><th>Dirección</th><th>Comuna</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 1: Por Inspector -->
+    <div class="tab-pane" id="pane1">
+      <div class="panel-section">
+        <div class="section-title">📂 Cargar Excel de inspectores</div>
+        <div class="upload-zone" id="dz1" onclick="document.getElementById('fileInputInsp').click()">
+          <input type="file" id="fileInputInsp" accept=".xlsx,.xls">
+          <div class="upload-icon">👷</div>
+          <p>Arrastrá o <strong>hacé clic aquí</strong></p>
+          <p style="font-size:10px;margin-top:3px">Excel con columnas INSPECTOR, DIRECCION, Geocodificación</p>
+        </div>
+        <div id="insp-config" style="display:none;margin-top:10px">
+          <div class="col-selector"><label>Inspector:</label><select id="colInspector"></select></div>
+          <div class="col-selector"><label>Dirección:</label><select id="colDireccion"></select></div>
+          <div class="col-selector"><label>Coords:</label><select id="colCoords"></select></div>
+          <button class="btn" onclick="procesarInspectores()">⚡ Procesar</button>
+        </div>
+        <div class="msg" id="statusInsp"></div>
+      </div>
+      <div class="insp-list" id="inspectorList">
+        <div class="no-data">Cargá un Excel para ver los inspectores</div>
+      </div>
+      <div style="padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0">
+        <button class="btn" id="btnZip" style="display:none" onclick="descargarZip()">⬇ Descargar todo (ZIP)</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: Asignar Inspectores -->
+    <div class="tab-pane" id="pane2">
+      <div class="panel-section">
+        <div class="section-title">📂 Archivo 1 — Direcciones con comunas</div>
+        <div class="upload-zone" id="dz2a" onclick="document.getElementById('fileAsig1').click()">
+          <input type="file" id="fileAsig1" accept=".xlsx,.xls,.csv">
+          <div class="upload-icon">📋</div>
+          <p id="lbl2a">Arrastrá o <strong>hacé clic aquí</strong></p>
+          <p style="font-size:10px;margin-top:3px">Excel/CSV con DIRECCION, COMUNA, (opcional) Geocodificación</p>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="section-title">📂 Archivo 2 — Inspectores con comunas</div>
+        <div class="upload-zone" id="dz2b" onclick="document.getElementById('fileAsig2').click()">
+          <input type="file" id="fileAsig2" accept=".xlsx,.xls,.csv">
+          <div class="upload-icon">👷</div>
+          <p id="lbl2b">Arrastrá o <strong>hacé clic aquí</strong></p>
+          <p style="font-size:10px;margin-top:3px">Excel/CSV con INSPECTOR, COMUNA, CANTIDAD</p>
+        </div>
+      </div>
+      <div id="asig2-config" style="display:none" class="panel-section">
+        <div class="col-selector"><label>Col. Dirección:</label><select id="a2ColDir"></select></div>
+        <div class="col-selector"><label>Col. Comuna (base):</label><select id="a2ColComuna"></select></div>
+        <div class="col-selector"><label>Col. Coords (opcional):</label><select id="a2ColCoords"><option value="">— Sin coords —</option></select></div>
+        <div class="col-selector"><label>Col. Inspector:</label><select id="a2ColInsp"></select></div>
+        <div class="col-selector"><label>Col. Comuna (inspectores):</label><select id="a2ColInspComuna"></select></div>
+        <div class="col-selector"><label>Col. Cantidad:</label><select id="a2ColCant"></select></div>
+        <button class="btn" id="btnAsig2" onclick="procesarAsignacion()">⚡ Asignar Inspectores</button>
+        <button class="btn btn-sec" id="btnDlAsig2" style="display:none" onclick="descargarAsignacion()">⬇ Descargar Excel</button>
+        <button class="btn btn-sec" id="btnDlKmlAsig2" style="display:none" onclick="descargarKmlAsignacion()">⬇ Descargar KML</button>
+      </div>
+      <div class="msg" id="statusAsig2"></div>
+      <div class="insp-list" id="asig2Summary" style="padding:10px 14px"></div>
+    </div>
+
+    <!-- TAB 3: Normalizar Batch -->
+    <div class="tab-pane" id="pane3">
+      <div class="panel-section">
+        <div class="section-title">📂 Cargar CSV / Excel</div>
+        <div class="upload-zone" id="dz3" onclick="document.getElementById('fileNorm').click()">
+          <input type="file" id="fileNorm" accept=".csv,.xlsx,.xls">
+          <div class="upload-icon">🗺️</div>
+          <p id="lblNorm">Arrastrá o <strong>hacé clic aquí</strong></p>
+          <p style="font-size:10px;margin-top:3px">CSV o Excel con columna de direcciones</p>
+        </div>
+        <div id="norm-config" style="display:none;margin-top:10px">
+          <div class="col-selector"><label>Col. Dirección:</label><select id="normColDir"></select></div>
+          <button class="btn" id="btnNorm" onclick="iniciarNormalizacion()">▶ Normalizar y geocodificar</button>
+          <button class="btn btn-sec" id="btnDlNorm" style="display:none" onclick="descargarNorm()">⬇ Descargar CSV</button>
+        </div>
+        <div class="progress-bar" id="normProgressBar"><div class="progress-fill" id="normProgressFill"></div></div>
+        <div class="msg" id="normStatusMsg"></div>
+      </div>
+      <div class="panel-section" style="flex-shrink:0">
+        <div class="stats-grid">
+          <div class="stat-card a"><div class="num" id="normStatTotal">—</div><div class="lbl">Total</div></div>
+          <div class="stat-card a"><div class="num" id="normStatOk">—</div><div class="lbl">Geocodificados</div></div>
+          <div class="stat-card w"><div class="num" id="normStatFail">—</div><div class="lbl">Sin resultado</div></div>
+          <div class="stat-card"><div class="num" id="normStatPend">—</div><div class="lbl">Pendientes</div></div>
+        </div>
+      </div>
+      <div style="padding:6px 14px;flex-shrink:0;display:flex;gap:6px;align-items:center">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Resultados</span>
+        <select id="normFiltro" onchange="renderNormTable()" style="display:none;margin-left:auto;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 8px;font-size:11px">
+          <option value="todos">Todos</option>
+          <option value="ok">✅ Geocodificados</option>
+          <option value="fail">❌ Sin resultado</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <div class="no-data" id="normEmptyMsg">Cargá un archivo para comenzar</div>
+        <table id="normTable" style="display:none;width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">#</th>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Original</th>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Normalizada</th>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Point</th>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)"></th>
+            </tr>
+          </thead>
+          <tbody id="normTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAPA -->
+  <div class="map-area">
+    <div id="map"></div>
+  </div>
+</div>
+
+<script>
+
+const COLORS = {1:'#e74c3c',2:'#e67e22',3:'#f1c40f',4:'#2ecc71',5:'#1abc9c',6:'#3498db',7:'#9b59b6',8:'#e91e63',9:'#ff5722',10:'#795548',11:'#607d8b',12:'#00bcd4',13:'#8bc34a',14:'#ff9800',15:'#673ab7'};
+const PAL = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#ff5722','#795548','#607d8b'];
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Inicializar mapa
+const map = L.map('map', {zoomControl:true, attributionControl:false}).setView([-34.615,-58.44],12);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+// Comunas
+const geojsonLayer = L.geoJSON(COMUNAS_GEO, {
+  style: f => ({fillColor:COLORS[f.properties.comuna]||'#666',fillOpacity:.25,color:'#fff',weight:1.5,opacity:.6}),
+  onEachFeature: (f,layer) => {
+    layer.on('mouseover', function(){ this.setStyle({fillOpacity:.5,weight:2.5}); });
+    layer.on('mouseout', function(){ geojsonLayer.resetStyle(this); });
+    layer.bindPopup('<div class="popup-title">Comuna '+f.properties.comuna+'</div><div class="popup-sub">'+f.properties.barrios+'</div>');
+  }
+}).addTo(map);
+
+// Labels de comunas
+COMUNAS_GEO.features.forEach(f => {
+  const coords = f.geometry.type==='MultiPolygon' ? f.geometry.coordinates[0][0] : f.geometry.coordinates[0];
+  let sx=0,sy=0; coords.forEach(c=>{sx+=c[0];sy+=c[1];});
+  const color = COLORS[f.properties.comuna]||'#fff';
+  L.marker([sy/coords.length, sx/coords.length], {
+    icon: L.divIcon({className:'',html:'<div style="background:'+color+';color:#000;font-weight:700;font-size:11px;font-family:monospace;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,.6);pointer-events:none">'+f.properties.comuna+'</div>',iconSize:[22,22],iconAnchor:[11,11]}),
+    interactive:false
+  }).addTo(map);
+});
+
+let markers=[], allData=[], inspData=[], inspResults={};
+
+// ===== TABS =====
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-pane').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  setTimeout(()=>map.invalidateSize(),50);
+}
+// Alias para tab 2
+
+
+// ===== ASIGNADOR =====
+const dz0 = document.getElementById('dz0');
+document.getElementById('fileInput').addEventListener('change', e => e.target.files[0] && loadCSV(e.target.files[0]));
+dz0.addEventListener('dragover', e=>{e.preventDefault();dz0.classList.add('drag')});
+dz0.addEventListener('dragleave', ()=>dz0.classList.remove('drag'));
+dz0.addEventListener('drop', e=>{e.preventDefault();dz0.classList.remove('drag');e.dataTransfer.files[0]&&loadCSV(e.dataTransfer.files[0])});
+
+async function loadCSV(file) {
+  setMsg('Leyendo...');
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext==='csv') {
+    let text = await file.text();
+    if (text.includes('\uFFFD')||/[\x80-\x9F]/.test(text)) {
+      text = await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsText(file,'ISO-8859-1');});
+    }
+    parseCSV(text);
+  } else {
+    const ab = await file.arrayBuffer();
+    const wb = XLSX.read(ab,{type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
+    allData = rows.map(row => {
+      const newRow = {...row};
+      Object.keys(newRow).forEach(k => {
+        if (/INGRESO|PLAZO/i.test(k)) {
+          newRow[k] = normalizarFechaAString(newRow[k]);
+        }
+      });
+      return newRow;
+    });
+    const cols = Object.keys(allData[0]||{});
+    const sel = document.getElementById('colSelect');
+    sel.innerHTML = cols.map(c=>'<option>'+c+'</option>').join('');
+    const guess = cols.find(c=>/dir|calle/i.test(c))||cols[0];
+    if (guess) sel.value=guess;
+    document.getElementById('col-config').style.display='block';
+    setMsg(allData.length+' registros cargados.');
+    updateStats(allData.length,0,0,0);
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l=>l.trim());
+  if (lines.length<2){setMsg('Archivo vacío.');return;}
+  const sep = lines[0].includes(';')?';':',';
+  const headers = lines[0].split(sep).map(h=>h.trim().replace(/"/g,''));
+  allData = lines.slice(1).map(line=>{
+    const vals=line.split(sep).map(v=>v.trim().replace(/"/g,''));
+    const obj={};
+    headers.forEach((h,i)=>{
+      let val = vals[i]||'';
+      if (/INGRESO|PLAZO/i.test(h)) {
+        val = normalizarFechaAString(val);
+      }
+      obj[h]=val;
+    });
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+  const sel=document.getElementById('colSelect');
+  sel.innerHTML=headers.map(h=>'<option>'+h+'</option>').join('');
+  const guess=headers.find(h=>/dir|calle/i.test(h))||headers[0];
+  if(guess)sel.value=guess;
+  document.getElementById('col-config').style.display='block';
+  setMsg(allData.length+' registros cargados.');
+  updateStats(allData.length,0,0,0);
+}
+
+function prepararDireccion(address) {
+  let dir = address.trim().replace(/\s+/g,' ');
+  // Convertir "NOMBRE AV. NUM" → "AV. NOMBRE NUM"
+  dir = dir.replace(/^(.+?)\s+(AV\.|AVE\.|AVENIDA)\s+([0-9].*)$/i, '$2 $1 $3');
+  // Convertir "NOMBRE AV." sin número → "AV. NOMBRE"
+  dir = dir.replace(/^(.+?)\s+(AV\.|AVE\.|AVENIDA)$/i, '$2 $1');
+  return dir;
+}
+
+async function normalizeAndGeocode(address) {
+  if (!address || !String(address).trim()) return {dirNorm:'',coord:null};
+  const dir = prepararDireccion(address);
+  const url = 'https://servicios.usig.buenosaires.gob.ar/normalizar/?direccion='+encodeURIComponent(dir)+'&geocodificar=TRUE&maxOptions=1';
+  // Hasta 3 intentos con backoff para no perder direcciones por timeout/saturación de API
+  for (let intento = 0; intento < 3; intento++) {
+    if (intento > 0) await new Promise(r => setTimeout(r, 600 * intento));
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      const data = await res.json();
+      if (data && data.direccionesNormalizadas && data.direccionesNormalizadas.length > 0) {
+        const d = data.direccionesNormalizadas[0];
+        const dirNorm = d.direccion || '';
+        let coord = null;
+        if (d.coordenadas && d.coordenadas.y && d.coordenadas.x)
+          coord = {lat: parseFloat(d.coordenadas.y), lng: parseFloat(d.coordenadas.x)};
+        return {dirNorm, coord};
+      }
+      return {dirNorm:'', coord:null}; // respuesta OK pero sin resultado, no reintentar
+    } catch(e) {
+      clearTimeout(timeoutId);
+      // Si fue abort/timeout reintentamos, si es otro error salimos
+      if (intento === 2) return {dirNorm:'', coord:null};
+    }
+  }
+  return {dirNorm:'', coord:null};
+}
+
+function pointInPolygon(point,polygon){
+  const [px,py]=point;let inside=false;
+  for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+    const [xi,yi]=polygon[i],[xj,yj]=polygon[j];
+    if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function getComunaForCoord(lat,lng){
+  for(const feat of COMUNAS_GEO.features){
+    const geom=feat.geometry;
+    const coords=geom.type==='MultiPolygon'?geom.coordinates.flat():geom.coordinates;
+    for(const ring of coords){
+      const outer=Array.isArray(ring[0][0])?ring[0]:ring;
+      if(pointInPolygon([lng,lat],outer))return feat.properties.comuna;
+    }
+  }
+  return null;
+}
+
+async function processData(){
+  const colName=document.getElementById('colSelect').value;
+  const modo=document.getElementById('modoSelect').value;
+  if(!allData.length)return;
+  document.getElementById('processBtn').disabled=true;
+  document.getElementById('progressBar').style.display='block';
+  const thead=document.getElementById('tableHead');
+  if(modo==='normalizar') thead.innerHTML='<tr><th>#</th><th>Original</th><th>Normalizada</th></tr>';
+  else if(modo==='comuna') thead.innerHTML='<tr><th>#</th><th>Dirección</th><th>Comuna</th></tr>';
+  else thead.innerHTML='<tr><th>#</th><th>Original</th><th>Normalizada</th><th>Comuna</th></tr>';
+  markers.forEach(m=>map.removeLayer(m));markers=[];
+  let asignados=0,sinNumero=0;const comunasPresentes=new Set();const results=[];
+  const BATCH=3;
+  for(let b=0;b<allData.length;b+=BATCH){
+    const lote=allData.slice(b,b+BATCH);
+    const processed=await Promise.all(lote.map(async (row,i)=>{
+      const idx=b+i;
+      const dir=row[colName]||'';
+      let dirNorm='',comuna=null;
+      const result=await normalizeAndGeocode(dir);
+      dirNorm=result.dirNorm;
+      if(modo!=='normalizar'&&result.coord){
+        comuna=getComunaForCoord(result.coord.lat,result.coord.lng);
+        if(comuna){
+          asignados++;comunasPresentes.add(comuna);
+          const m=L.circleMarker([result.coord.lat,result.coord.lng],{radius:6,fillColor:COLORS[comuna]||'#fff',color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
+          m.bindPopup('<div class="popup-title">C'+comuna+'</div><div class="popup-sub">'+escHtml(dir)+'</div>');
+          markers.push(m);
+        }
+      } else if(modo==='normalizar'){
+        // no mapa
+      } else { sinNumero++; }
+      if(modo==='normalizar') return {...row,DIRECCION_NORMALIZADA:dirNorm};
+      else if(modo==='comuna') return {...row,COMUNA_ASIGNADA:comuna||''};
+      else return {...row,DIRECCION_NORMALIZADA:dirNorm,COMUNA_ASIGNADA:comuna||''};
+    }));
+    results.push(...processed);
+    document.getElementById('progressFill').style.width=Math.round(Math.min(b+BATCH,allData.length)/allData.length*100)+'%';
+    setMsg('Procesando '+Math.min(b+BATCH,allData.length)+' de '+allData.length+'...');
+    renderTable(results,colName,modo);
+    updateStats(allData.length,asignados,sinNumero,comunasPresentes.size);
+    if(b+BATCH<allData.length) await new Promise(r=>setTimeout(r,100));
+  }
+  allData=results;
+  document.getElementById('processBtn').disabled=false;
+  setMsg('✅ Listo. '+(modo==='normalizar'?allData.length+' normalizadas.':asignados+' de '+allData.length+' asignados.'));
+}
+function renderTable(data,colName,modo){
+  document.getElementById('emptyMsg').style.display='none';
+  document.getElementById('resultsTable').style.display='table';
+  const tbody=document.getElementById('tableBody');
+  tbody.innerHTML=data.map((row,i)=>{
+    const dir=row[colName]||'';
+    const com=row.COMUNA_ASIGNADA;
+    const norm=row.DIRECCION_NORMALIZADA||'';
+    const color=com?COLORS[com]:'#444';
+    const td='max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    const badge=com?'<span class="cb" style="background:'+color+'22;color:'+color+';border:1px solid '+color+'44">C'+com+'</span>':'<span style="color:var(--muted)">—</span>';
+    const normCell=norm?'<td style="'+td+';color:var(--accent)" title="'+norm+'">'+norm+'</td>':'<td style="color:var(--muted)">—</td>';
+    if(modo==='normalizar') return '<tr><td style="color:var(--muted);font-family:monospace">'+(i+1)+'</td><td style="'+td+'" title="'+dir+'">'+dir+'</td>'+normCell+'</tr>';
+    if(modo==='comuna') return '<tr onclick="hlMarker('+i+')"><td style="color:var(--muted);font-family:monospace">'+(i+1)+'</td><td style="'+td+'" title="'+dir+'">'+dir+'</td><td>'+badge+'</td></tr>';
+    return '<tr onclick="hlMarker('+i+')"><td style="color:var(--muted);font-family:monospace">'+(i+1)+'</td><td style="'+td+'" title="'+dir+'">'+dir+'</td>'+normCell+'<td>'+badge+'</td></tr>';
+  }).join('');
+}
+
+function hlMarker(idx){ if(markers[idx]){map.setView(markers[idx].getLatLng(),15);markers[idx].openPopup();} }
+function updateStats(t,a,s,c){ document.getElementById('statTotal').textContent=t;document.getElementById('statAsig').textContent=a;document.getElementById('statSinNum').textContent=s;document.getElementById('statComunas').textContent=c; }
+function setMsg(m){ document.getElementById('statusMsg').textContent=m; }
+function downloadResult(){
+  if(!allData.length)return;
+  const ws=XLSX.utils.json_to_sheet(allData);
+  const keys=Object.keys(allData[0]);
+  applyDateFormat(ws,keys);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Resultado');
+  XLSX.writeFile(wb,'resultado_comunas.xlsx');
+}
+
+// ===== INSPECTORES =====
+const dz1=document.getElementById('dz1');
+document.getElementById('fileInputInsp').addEventListener('change',e=>e.target.files[0]&&loadInspectorFile(e.target.files[0]));
+dz1.addEventListener('dragover',e=>{e.preventDefault();dz1.classList.add('drag')});
+dz1.addEventListener('dragleave',()=>dz1.classList.remove('drag'));
+dz1.addEventListener('drop',e=>{e.preventDefault();dz1.classList.remove('drag');e.dataTransfer.files[0]&&loadInspectorFile(e.dataTransfer.files[0])});
+
+async function loadInspectorFile(file){
+  document.getElementById('statusInsp').textContent='Leyendo...';
+  const ab=await file.arrayBuffer();
+  const wb=XLSX.read(ab,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  // Leer con raw:true para obtener números seriales de fechas
+  const rowsRaw=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
+  // Convertir celdas de fecha (tipo 'n' con formato de fecha en el sheet)
+  const dateSerial = n => {
+    if(typeof n !== 'number' || n < 1 || n > 100000) return n;
+    // Excel serial: días desde 1900-01-00, con bug de 1900 como bisiesto
+    const d = new Date(Date.UTC(1900,0,1) + (n - 2) * 86400000);
+    const dd = String(d.getUTCDate()).padStart(2,'0');
+    const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+    const yyyy = d.getUTCFullYear();
+    return dd+'/'+mm+'/'+yyyy;
+  };
+  // Detectar qué celdas son fechas usando el objeto ws directamente
+  const dateAddrs = new Set();
+  Object.keys(ws).forEach(addr => {
+    if(addr[0]==='!') return;
+    const cell = ws[addr];
+    if(cell.t==='n' && cell.z && /d|m|y/i.test(cell.z)) dateAddrs.add(addr);
+  });
+  // Mapear direcciones a nombres de columna
+  const range = XLSX.utils.decode_range(ws['!ref']||'A1');
+  const dateColIdxs = new Set();
+  for(let c=range.s.c;c<=range.e.c;c++){
+    const addr=XLSX.utils.encode_cell({r:range.s.r,c});
+    // Chequear si alguna celda de esa columna es fecha
+    for(let r=range.s.r+1;r<=Math.min(range.s.r+5,range.e.r);r++){
+      const a=XLSX.utils.encode_cell({r,c});
+      if(dateAddrs.has(a)){dateColIdxs.add(c);break;}
+    }
+  }
+  const rows = rowsRaw.map(row => {
+    const newRow = {...row};
+    dateColIdxs.forEach(ci => {
+      const header = XLSX.utils.encode_cell({r:range.s.r,c:ci});
+      const colName = ws[header]?ws[header].v:'';
+      if(colName && typeof newRow[colName]==='number') newRow[colName]=dateSerial(newRow[colName]);
+    });
+    Object.keys(newRow).forEach(k => {
+      if (/INGRESO|PLAZO/i.test(k)) {
+        newRow[k] = normalizarFechaAString(newRow[k]);
+      }
+    });
+    return newRow;
+  });
+  if(!rows.length){document.getElementById('statusInsp').textContent='Archivo vacío.';return;}
+  inspData=rows;
+  const cols=Object.keys(rows[0]);
+  ['colInspector','colDireccion','colCoords'].forEach(id=>{
+    document.getElementById(id).innerHTML=cols.map(c=>'<option>'+c+'</option>').join('');
+  });
+  const gi=(sel,kws)=>{const f=cols.find(c=>kws.some(k=>c.toLowerCase().includes(k)));if(f)document.getElementById(sel).value=f;};
+  gi('colInspector',['inspector']);gi('colDireccion',['direcc','calle']);gi('colCoords',['geo','coord','point']);
+  document.getElementById('insp-config').style.display='block';
+  document.getElementById('statusInsp').textContent=rows.length+' registros cargados.';
+}
+
+function parseUSIG(str){
+  if(!str)return null;
+  const m=String(str).match(/POINT\(([0-9.]+)\s+([0-9.]+)\)/i);
+  if(!m)return null;
+  const x=parseFloat(m[1]),y=parseFloat(m[2]);
+  const a=6378388,f=1/297,e2=2*f-f*f,k0=0.9999980;
+  const lon0=-58.462795*Math.PI/180,lat0=-34.629269*Math.PI/180;
+  const X=x-100000,Y=y-100000;
+  const e=Math.sqrt(e2);
+  const M0=a*((1-e2/4-3*e2*e2/64)*lat0-(3*e2/8+3*e2*e2/32)*Math.sin(2*lat0)+(15*e2*e2/256)*Math.sin(4*lat0));
+  const M=M0+Y/k0,mu=M/(a*(1-e2/4-3*e2*e2/64));
+  const e1=(1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));
+  const phi1=mu+(3*e1/2-27*e1*e1*e1/32)*Math.sin(2*mu)+(21*e1*e1/16)*Math.sin(4*mu)+(151*e1*e1*e1/96)*Math.sin(6*mu);
+  const N1=a/Math.sqrt(1-e2*Math.sin(phi1)*Math.sin(phi1));
+  const T1=Math.tan(phi1)*Math.tan(phi1),C1=e2/(1-e2)*Math.cos(phi1)*Math.cos(phi1);
+  const R1=a*(1-e2)/Math.pow(1-e2*Math.sin(phi1)*Math.sin(phi1),1.5);
+  const D=X/(N1*k0);
+  const lat=phi1-(N1*Math.tan(phi1)/R1)*(D*D/2-(5+3*T1+10*C1-4*C1*C1-9*e2/(1-e2))*D*D*D*D/24);
+  const lon=lon0+(D-(1+2*T1+C1)*D*D*D/6)/Math.cos(phi1);
+  const latDeg=lat*180/Math.PI;
+  const lngDeg=lon*180/Math.PI;
+  return{lat:latDeg,lon:lngDeg,lng:lngDeg};
+}
+
+function escXml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function safeName(n){return'INSPECTOR_'+String(n).trim().replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]/g,'').trim();}
+
+// --- Helpers de fecha INGRESO / PLAZO ---
+function normalizarFechaAString(v) {
+  if (!v) return '';
+  if (typeof v === 'number' && v > 1 && v < 100000) {
+    const d = new Date(Date.UTC(1900,0,1) + (v - 2) * 86400000);
+    const dd = String(d.getUTCDate()).padStart(2,'0');
+    const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+    const yyyy = d.getUTCFullYear();
+    return dd+'/'+mm+'/'+yyyy;
+  }
+  if (v instanceof Date) {
+    if (!isNaN(v.getTime())) {
+      const dd = String(v.getDate()).padStart(2,'0');
+      const mm = String(v.getMonth()+1).padStart(2,'0');
+      const yyyy = v.getFullYear();
+      return dd+'/'+mm+'/'+yyyy;
+    }
+    return '';
+  }
+  const str = String(v).trim();
+  if (!str) return '';
+  let m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m) {
+    let d = String(m[1]).padStart(2, '0');
+    let mo = String(m[2]).padStart(2, '0');
+    let y = m[3];
+    if (y.length === 2) y = '20' + y;
+    return d+'/'+mo+'/'+y;
+  }
+  m = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m) {
+    let y = m[1];
+    let mo = String(m[2]).padStart(2, '0');
+    let d = String(m[3]).padStart(2, '0');
+    return d+'/'+mo+'/'+y;
+  }
+  const ts = Date.parse(str);
+  if (!isNaN(ts)) {
+    const d = new Date(ts);
+    const hasTime = str.includes('T') || str.includes(':');
+    const dd = String(hasTime ? d.getDate() : d.getUTCDate()).padStart(2, '0');
+    const mm = String(hasTime ? d.getMonth() + 1 : d.getUTCMonth() + 1).padStart(2, '0');
+    const yyyy = hasTime ? d.getFullYear() : d.getUTCFullYear();
+    return dd+'/'+mm+'/'+yyyy;
+  }
+  return str;
+}
+function excelSerialToDateStr(n){
+  if(typeof n!=='number'||n<1||n>100000)return String(n);
+  const d=new Date(Date.UTC(1900,0,1)+(n-2)*86400000);
+  const dd=String(d.getUTCDate()).padStart(2,'0');
+  const mm=String(d.getUTCMonth()+1).padStart(2,'0');
+  const yyyy=d.getUTCFullYear();
+  return dd+'/'+mm+'/'+yyyy;
+}
+function parseDateToSerial(v){
+  if(typeof v==='number'&&v>1&&v<100000)return v;
+  const str = String(v).trim();
+  if(!str) return null;
+  let m=str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if(m){
+    let d=parseInt(m[1]),mo=parseInt(m[2]),y=parseInt(m[3]);
+    if(y<100)y+=2000;
+    const date=new Date(y,mo-1,d);
+    if(!isNaN(date))return 25569+date.getTime()/86400000;
+  }
+  m=str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if(m){
+    let y=parseInt(m[1]),mo=parseInt(m[2]),d=parseInt(m[3]);
+    const date=new Date(y,mo-1,d);
+    if(!isNaN(date))return 25569+date.getTime()/86400000;
+  }
+  return null;
+}
+function formatDateDDMMYYYY(v){
+  const serial=parseDateToSerial(v);
+  return serial!==null?excelSerialToDateStr(serial):normalizarFechaAString(v);
+}
+function applyDateFormat(ws,keys){
+  const dateCols=keys.map((k,i)=>/INGRESO|PLAZO/i.test(k)?i:-1).filter(i=>i>=0);
+  if(!dateCols.length)return;
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  for(let r=range.s.r+1;r<=range.e.r;r++){
+    dateCols.forEach(ci=>{
+      const addr=XLSX.utils.encode_cell({r,c:ci});
+      if(ws[addr]){
+        const serial=parseDateToSerial(ws[addr].v);
+        if(serial!==null){
+          ws[addr].t='n';
+          ws[addr].v=serial;
+          ws[addr].z='DD/MM/YYYY';
+        }
+      }
+    });
+  }
+}
+
+async function procesarInspectores(){
+  const ci=document.getElementById('colInspector').value;
+  const cd=document.getElementById('colDireccion').value;
+  const cc=document.getElementById('colCoords').value;
+  markers.forEach(m=>map.removeLayer(m));markers=[];
+  inspResults={};
+  inspData.forEach(row=>{
+    const insp=String(row[ci]||'SIN_INSPECTOR').trim();
+    if(!inspResults[insp])inspResults[insp]=[];
+    inspResults[insp].push({row,coord:parseUSIG(row[cc])});
+  });
+  const names=Object.keys(inspResults);
+  names.forEach((insp,idx)=>{
+    const color=PAL[idx%PAL.length];
+    inspResults[insp].forEach(p=>{
+      if(p.coord){
+        const m=L.circleMarker([p.coord.lat,p.coord.lon],{radius:7,fillColor:color,color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
+        m.bindPopup('<div class="popup-title">'+insp+'</div><div class="popup-sub">'+(p.row[cd]||'')+'</div>');
+        markers.push(m);
+      }
+    });
+  });
+  const list=document.getElementById('inspectorList');
+  list.innerHTML=names.map((insp,idx)=>{
+    const puntos=inspResults[insp];
+    const color=PAL[idx%PAL.length];
+    const comunas=[...new Set(puntos.map(p=>p.row['COMUNA']||p.row['comuna']).filter(Boolean))].sort().join(', ');
+    return '<div class="insp-card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div>'+
+          '<div class="insp-name" style="color:'+color+'">'+escHtml(insp)+'</div>'+
+          '<div class="insp-meta">'+puntos.length+' puntos'+(comunas?' · C: '+escHtml(comunas):'')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="insp-btns">'+
+        '<button class="insp-btn" style="background:'+color+';color:#000" onclick="dlKML(this.dataset.n)" data-n="'+escHtml(insp)+'">⬇ KML</button>'+
+        '<button class="insp-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="dlXLSX(this.dataset.n)" data-n="'+escHtml(insp)+'">⬇ Excel</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('btnZip').style.display='block';
+  document.getElementById('statusInsp').textContent='✅ '+names.length+' inspectores procesados.';
+  map.setView([-34.615,-58.44],12);
+}
+
+function generarKML(insp,puntos,colDir){
+  // Obtener todas las columnas para Schema
+  const allCols = puntos.length>0 ? Object.keys(puntos[0].row) : [];
+  const schemaId = 'schema_'+insp.replace(/\s+/g,'_');
+  const schemaFields = allCols.map(c=>'<SimpleField type="string" name="'+escXml(c)+'"><displayName>'+escXml(c)+'</displayName></SimpleField>').join('');
+  const schema = '<Schema name="'+escXml(insp)+'" id="'+escXml(schemaId)+'">'+schemaFields+'</Schema>';
+
+  const placemarks=puntos.map(p=>{
+    const dirCol=colDir||Object.keys(p.row).find(k=>/direcc/i.test(k))||Object.keys(p.row)[0];
+    const nombre=escXml(String(p.row[dirCol]||''));
+    if(!p.coord)return'';
+    // ExtendedData con SchemaData — formato que My Maps muestra como tabla
+    const simpleData=allCols.map(c=>'<SimpleData name="'+escXml(c)+'">'+escXml(/INGRESO|PLAZO/i.test(c)?formatDateDDMMYYYY(p.row[c]):String(p.row[c]||''))+'</SimpleData>').join('');
+    const extended='<ExtendedData><SchemaData schemaUrl="#'+escXml(schemaId)+'">'+simpleData+'</SchemaData></ExtendedData>';
+    return'<Placemark><name>'+nombre+'</name>'+extended+'<Point><coordinates>'+p.coord.lon+','+p.coord.lat+',0</coordinates></Point></Placemark>';
+  }).filter(Boolean).join('\n');
+
+  return'<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>'+escXml(insp)+'</name>'+schema+placemarks+'</Document></kml>';
+}
+
+function dlKML(insp){
+  const puntos=inspResults[insp];if(!puntos)return;
+  const kml=generarKML(insp,puntos);
+  const blob=new Blob([kml],{type:'application/vnd.google-earth.kml+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=safeName(insp)+'.kml';a.click();
+}
+
+function dlXLSX(insp){
+  const puntos=inspResults[insp];if(!puntos)return;
+  const rows=puntos.map(p=>p.row);
+  const ws=XLSX.utils.json_to_sheet(rows);
+  if(rows.length > 0){
+    applyDateFormat(ws, Object.keys(rows[0]));
+  }
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Datos');
+  const ts=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  XLSX.writeFile(wb,safeName(insp)+'_'+ts+'.xlsx');
+}
+
+async function descargarZip(){
+  if(!window.JSZip){
+    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.integrity='sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG';s.crossOrigin='anonymous';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  }
+  const zip=new JSZip();
+  const kmlF=zip.folder('KML'),xlsxF=zip.folder('Excel');
+  for(const insp of Object.keys(inspResults)){
+    const fname=safeName(insp);
+    kmlF.file(fname+'.kml',generarKML(insp,inspResults[insp]));
+    const rows=inspResults[insp].map(p=>p.row);
+    const ws=XLSX.utils.json_to_sheet(rows);
+    if(rows.length > 0){
+      applyDateFormat(ws, Object.keys(rows[0]));
+    }
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Datos');
+    const xlsxData=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    xlsxF.file(fname+'.xlsx',xlsxData);
+  }
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='INSPECTORES_CABA.zip';a.click();
+}
+
+// ===== TAB 2: ASIGNAR INSPECTORES =====
+let asig2Base = [], asig2Inspectores = [], asig2Resultado = [];
+
+// Drag & drop para los dos dropzones
+['dz2a','dz2b'].forEach(id => {
+  const dz = document.getElementById(id);
+  dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag')});
+  dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
+  dz.addEventListener('drop', e=>{
+    e.preventDefault();dz.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if(file) id==='dz2a' ? cargarBase(file) : cargarInspectores(file);
+  });
+});
+document.getElementById('fileAsig1').addEventListener('change', e=>e.target.files[0]&&cargarBase(e.target.files[0]));
+document.getElementById('fileAsig2').addEventListener('change', e=>e.target.files[0]&&cargarInspectores(e.target.files[0]));
+
+async function leerArchivo(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext==='csv') {
+    let text = await file.text();
+    if(text.includes('\uFFFD')||/[\x80-\x9F]/.test(text))
+      text = await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsText(file,'ISO-8859-1');});
+    const lines=text.split('\n').filter(l=>l.trim());
+    const sep=lines[0].includes(';')?';':',';
+    const headers=lines[0].split(sep).map(h=>h.trim().replace(/"/g,''));
+    return lines.slice(1).map(line=>{
+      const vals=line.split(sep).map(v=>v.trim().replace(/"/g,''));
+      const obj={};
+      headers.forEach((h,i)=>{
+        let val = vals[i]||'';
+        if (/INGRESO|PLAZO/i.test(h)) {
+          val = normalizarFechaAString(val);
+        }
+        obj[h]=val;
+      });
+      return obj;
+    }).filter(r=>Object.values(r).some(v=>v));
+  } else {
+    const ab=await file.arrayBuffer();
+    const wb=XLSX.read(ab,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rowsRaw=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
+    const dateSerial=n=>{if(typeof n!=='number'||n<1||n>100000)return n;const d=new Date(Date.UTC(1900,0,1)+(n-2)*86400000);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();};
+    const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+    const dateCols=new Set();
+    for(let c=range.s.c;c<=range.e.c;c++){for(let r=range.s.r+1;r<=Math.min(range.s.r+5,range.e.r);r++){const a=XLSX.utils.encode_cell({r,c});if(ws[a]&&ws[a].t==='n'&&ws[a].z&&/d|m|y/i.test(ws[a].z)){dateCols.add(c);break;}}}
+    const hdrs=[];for(let c=range.s.c;c<=range.e.c;c++){const a=XLSX.utils.encode_cell({r:range.s.r,c});hdrs.push(ws[a]?ws[a].v:'');}
+    return rowsRaw.map(row=>{
+      const nr={...row};
+      dateCols.forEach(ci=>{
+        const h=hdrs[ci-range.s.c];
+        if(h&&typeof nr[h]==='number')nr[h]=dateSerial(nr[h]);
+      });
+      Object.keys(nr).forEach(k => {
+        if (/INGRESO|PLAZO/i.test(k)) {
+          nr[k] = normalizarFechaAString(nr[k]);
+        }
+      });
+      return nr;
+    });
+  }
+}
+
+async function cargarBase(file) {
+  document.getElementById('statusAsig2').textContent='Leyendo archivo 1...';
+  asig2Base = await leerArchivo(file);
+  document.getElementById('lbl2a').innerHTML='✅ <strong>'+file.name+'</strong> ('+asig2Base.length+' registros)';
+  poblarSelectores();
+}
+
+async function cargarInspectores(file) {
+  document.getElementById('statusAsig2').textContent='Leyendo archivo 2...';
+  asig2Inspectores = await leerArchivo(file);
+  document.getElementById('lbl2b').innerHTML='✅ <strong>'+file.name+'</strong> ('+asig2Inspectores.length+' inspectores)';
+  poblarSelectores();
+}
+
+function poblarSelectores() {
+  if(!asig2Base.length || !asig2Inspectores.length) return;
+  const colsBase = Object.keys(asig2Base[0]);
+  const colsInsp = Object.keys(asig2Inspectores[0]);
+  const guess = (sel, cols, kws) => {
+    document.getElementById(sel).innerHTML = cols.map(c=>'<option>'+c+'</option>').join('');
+    const f=cols.find(c=>kws.some(k=>c.toLowerCase().includes(k)));
+    if(f) document.getElementById(sel).value=f;
+  };
+  guess('a2ColDir', colsBase, ['direcc','calle']);
+  guess('a2ColComuna', colsBase, ['comuna']);
+  const coordSel = document.getElementById('a2ColCoords');
+  coordSel.innerHTML='<option value="">— Sin coords —</option>'+colsBase.map(c=>'<option>'+c+'</option>').join('');
+  const coordGuess=colsBase.find(c=>/geo|coord|point/i.test(c));
+  if(coordGuess) coordSel.value=coordGuess;
+  guess('a2ColInsp', colsInsp, ['inspector','nombre']);
+  guess('a2ColInspComuna', colsInsp, ['comuna']);
+  guess('a2ColCant', colsInsp, ['cant','recorr','cantidad','total']);
+  document.getElementById('asig2-config').style.display='block';
+  document.getElementById('statusAsig2').textContent='Archivos cargados. Configurá las columnas y procesá.';
+}
+
+// Distancia euclidiana simple (suficiente para CABA)
+function toRad(v){return v*Math.PI/180;}
+function dist(a,b){
+  const R=6371e3;
+  const dLat=toRad(b.lat-a.lat);
+  const dLon=toRad(b.lng-a.lng);
+  const lat1=toRad(a.lat);
+  const lat2=toRad(b.lat);
+  const c=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2*R*Math.atan2(Math.sqrt(c),Math.sqrt(1-c));
+}
+
+// K-means simplificado para asignar puntos a inspectores por cercanía
+function asignarPorCercania(puntos, grupos) {
+  // grupos: [{inspector, cantidad, centro}] donde centro es lat/lng promedio inicial
+  // Inicializar centros con distribución uniforme de los puntos
+  const result = puntos.map(p=>({...p, inspector_asignado:'', dist_min:Infinity}));
+  
+  // Cupos por inspector
+  const cupos = {};
+  grupos.forEach(g=>cupos[g.inspector]=parseInt(g.cantidad)||0);
+  
+  // Calcular distancias de cada punto a cada inspector y asignar greedy respetando cupos
+  const asignaciones = {};
+  grupos.forEach(g=>asignaciones[g.inspector]=[]);
+  
+  // Para cada punto calcular distancia a todos los inspectores
+  const puntosCopia = [...result].map((p,i)=>({...p,idx:i}));
+  
+  // Ordenar por distancia mínima a cualquier inspector (greedy)
+  const pares = [];
+  puntosCopia.forEach(p=>{
+    grupos.forEach(g=>{
+      if(p.coord && g.centro) pares.push({pidx:p.idx, inspector:g.inspector, d:dist(p.coord,g.centro)});
+    });
+  });
+  pares.sort((a,b)=>a.d-b.d);
+  
+  const asignado = new Set();
+  pares.forEach(par=>{
+    if(asignado.has(par.pidx)) return;
+    const insp = par.inspector;
+    if((asignaciones[insp]||[]).length < (cupos[insp]||0)) {
+      asignaciones[insp].push(par.pidx);
+      result[par.pidx].inspector_asignado = insp;
+      asignado.add(par.pidx);
+    }
+  });
+  
+  // Puntos sin asignar → asignar al inspector con más cupo restante
+  result.forEach((p,i)=>{
+    if(!p.inspector_asignado) {
+      const sobrante = grupos.find(g=>(asignaciones[g.inspector]||[]).length < (cupos[g.inspector]||0));
+      if(sobrante) { p.inspector_asignado=sobrante.inspector; asignaciones[sobrante.inspector].push(i); }
+    }
+  });
+  
+  return result;
+}
+
+async function procesarAsignacion() {
+  const colDir = document.getElementById('a2ColDir').value;
+  const colComuna = document.getElementById('a2ColComuna').value;
+  const colCoords = document.getElementById('a2ColCoords').value;
+  const colInsp = document.getElementById('a2ColInsp').value;
+  const colInspComuna = document.getElementById('a2ColInspComuna').value;
+  const colCant = document.getElementById('a2ColCant').value;
+  
+  document.getElementById('btnAsig2').disabled=true;
+  markers.forEach(m=>map.removeLayer(m));markers=[];
+  
+  const total = asig2Base.length;
+  let procesados = 0;
+  
+  // Paso 1: Obtener coordenadas para registros sin coords
+  const base = asig2Base.map(row=>({...row, _coord:null}));
+  
+  // Separar los que ya tienen coords de los que hay que geocodificar
+  const sinCoord = [];
+  for(let i=0;i<base.length;i++) {
+    if(colCoords && base[i][colCoords] && String(base[i][colCoords]).includes('POINT')) {
+      base[i]._coord = parseUSIG(base[i][colCoords]);
+    } else {
+      sinCoord.push(i);
+    }
+  }
+
+  if(sinCoord.length) {
+    document.getElementById('statusAsig2').textContent='Geocodificando '+sinCoord.length+' direcciones en paralelo...';
+    // Procesar en lotes de 5 simultáneos
+    const BATCH = 5;
+    for(let b=0;b<sinCoord.length;b+=BATCH) {
+      const lote = sinCoord.slice(b, b+BATCH);
+      await Promise.all(lote.map(async i => {
+        const r = await normalizeAndGeocode(String(base[i][colDir]||''));
+        if(r.coord) base[i]._coord = {lat:r.coord.lat, lng:r.coord.lng};
+      }));
+      document.getElementById('statusAsig2').textContent='Geocodificando '+(Math.min(b+BATCH,sinCoord.length))+' de '+sinCoord.length+'...';
+    }
+  }
+  document.getElementById('statusAsig2').textContent='Asignando inspectores...';
+  
+  // Paso 2: Agrupar inspectores por comuna
+  const inspPorComuna = {};
+  asig2Inspectores.forEach(row=>{
+    const com = String(row[colInspComuna]||'').trim();
+    const insp = String(row[colInsp]||'').trim();
+    const cant = parseInt(row[colCant])||0;
+    if(!inspPorComuna[com]) inspPorComuna[com]=[];
+    inspPorComuna[com].push({inspector:insp, cantidad:cant});
+  });
+  
+  // Paso 3: Para cada comuna, asignar inspectores a direcciones
+  const comunas = [...new Set(base.map(r=>String(r[colComuna]||'').trim()))];
+  asig2Resultado = base.map(r=>({...r, INSPECTOR_ASIGNADO:'Sin asignar'}));
+
+  comunas.forEach(com=>{
+    try {
+      const idxsCom = [];
+      base.forEach((r,i)=>{ if(String(r[colComuna]||'').trim()===com) idxsCom.push(i); });
+      const inspCom = inspPorComuna[com]||[];
+
+      if(!inspCom.length) return; // ya tiene 'Sin asignar'
+
+      // Definir cupos de asignación por inspector
+      const cupos = {};
+      inspCom.forEach(g=>cupos[g.inspector]=parseInt(g.cantidad)||0);
+      
+      const asignados = {};
+      inspCom.forEach(g=>asignados[g.inspector]=[]);
+
+      // Separar los índices con coordenadas de los que no las tienen
+      const puntosConCoord = idxsCom.filter(i=>base[i]._coord);
+      const puntosSinCoord = idxsCom.filter(i=>!base[i]._coord);
+
+      if (puntosConCoord.length > 0) {
+        // Calcular centro inicial para cada inspector
+        if (inspCom.length === 1) {
+          // Si es un solo inspector, el centro inicial es el centro promedio de todos los puntos de la comuna
+          const avgLat = puntosConCoord.reduce((s,i)=>s+base[i]._coord.lat,0)/puntosConCoord.length;
+          const avgLng = puntosConCoord.reduce((s,i)=>s+base[i]._coord.lng,0)/puntosConCoord.length;
+          inspCom[0].centro = {lat:avgLat, lng:avgLng};
+        } else {
+          // Si hay varios inspectores, dividir en base a cupos (lógica K-means inicial)
+          const sorted = [...puntosConCoord].sort((a,b)=>base[a]._coord.lat - base[b]._coord.lat);
+          let offset = 0;
+          inspCom.forEach(g=>{
+            const cant = parseInt(g.cantidad)||1;
+            const slice = sorted.slice(offset, offset+cant);
+            if(slice.length){
+              const avgLat = slice.reduce((s,i)=>s+base[i]._coord.lat,0)/slice.length;
+              const avgLng = slice.reduce((s,i)=>s+base[i]._coord.lng,0)/slice.length;
+              g.centro = {lat:avgLat, lng:avgLng};
+            } else {
+              g.centro = base[sorted[0]]._coord;
+            }
+            offset+=cant;
+          });
+        }
+
+        // Calcular pares ordenados por distancia
+        const pares = [];
+        puntosConCoord.forEach(i=>{
+          const coord = base[i]._coord;
+          inspCom.forEach(g=>{
+            if(!g.centro) return;
+            const d = Math.pow(coord.lat-g.centro.lat,2)+Math.pow(coord.lng-g.centro.lng,2);
+            pares.push({i, inspector:g.inspector, d});
+          });
+        });
+        pares.sort((a,b)=>a.d-b.d);
+
+        // Asignación greedy de puntos con coordenadas respetando cupos
+        const yaAsignado = new Set();
+        pares.forEach(par=>{
+          if(yaAsignado.has(par.i)) return;
+          if((asignados[par.inspector]||[]).length < (cupos[par.inspector]||0)) {
+            asignados[par.inspector].push(par.i);
+            asig2Resultado[par.i].INSPECTOR_ASIGNADO = par.inspector;
+            yaAsignado.add(par.i);
+          }
+        });
+      }
+
+      // Los puntos sin coordenadas, o los que quedaron como sobrantes porque excedieron los cupos de cercanía
+      // se reparten secuencialmente a los inspectores de la comuna que todavía tengan cupo disponible.
+      idxsCom.forEach(i=>{
+        if(asig2Resultado[i].INSPECTOR_ASIGNADO==='Sin asignar') {
+          const sobrante = inspCom.find(g=>(asignados[g.inspector]||[]).length < (cupos[g.inspector]||0));
+          if(sobrante) {
+            asignados[sobrante.inspector].push(i);
+            asig2Resultado[i].INSPECTOR_ASIGNADO = sobrante.inspector;
+          }
+        }
+      });
+
+    } catch(e) {
+      console.error('Error en comuna '+com+':', e);
+    }
+  });
+  
+  // Paso 4: Mostrar en mapa
+  const inspColors = {};
+  [...new Set(asig2Resultado.map(r=>r.INSPECTOR_ASIGNADO).filter(Boolean))].forEach((insp,i)=>inspColors[insp]=PAL[i%PAL.length]);
+  
+  asig2Resultado.forEach(row=>{
+    if(row._coord) {
+      const color = inspColors[row.INSPECTOR_ASIGNADO]||'#aaa';
+      const com = row[colComuna]||'';
+      const m = L.circleMarker([row._coord.lat,row._coord.lng],{radius:7,fillColor:color,color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
+      m.bindPopup('<div class="popup-title">'+(row.INSPECTOR_ASIGNADO||'Sin asignar')+'</div><div class="popup-sub">'+(row[colDir]||'')+' · C'+com+'</div>');
+      markers.push(m);
+    }
+  });
+  
+  // Paso 5: Resumen
+  const resumen = {};
+  asig2Resultado.forEach(r=>{
+    const insp=r.INSPECTOR_ASIGNADO||'Sin asignar';
+    if(!resumen[insp]) resumen[insp]={count:0,comunas:new Set()};
+    resumen[insp].count++;
+    resumen[insp].comunas.add(String(r[colComuna]||''));
+  });
+  
+  const summary = document.getElementById('asig2Summary');
+  summary.innerHTML = Object.entries(resumen).map(([insp,d])=>{
+    const color=inspColors[insp]||'#aaa';
+    return '<div class="insp-card"><div class="insp-name" style="color:'+color+'">'+escHtml(insp)+'</div><div class="insp-meta">'+d.count+' direcciones · Comunas: '+escHtml([...d.comunas].sort().join(', '))+'</div></div>';
+  }).join('');
+  
+  document.getElementById('btnDlAsig2').style.display='block';
+  document.getElementById('btnDlKmlAsig2').style.display='block';
+  document.getElementById('btnAsig2').disabled=false;
+  document.getElementById('statusAsig2').textContent='✅ Asignación completada.';
+  map.setView([-34.615,-58.44],12);
+}
+
+function descargarAsignacion() {
+  if(!asig2Resultado.length) return;
+  const clean = asig2Resultado.map(r=>{const nr={...r};delete nr._coord;delete nr._idx;return nr;});
+  const ws=XLSX.utils.json_to_sheet(clean);
+  const keys=Object.keys(clean[0]);
+  applyDateFormat(ws,keys);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Asignacion');
+  XLSX.writeFile(wb,'asignacion_inspectores.xlsx');
+}
+
+function descargarKmlAsignacion() {
+  if(!asig2Resultado.length) return;
+  const colDir = document.getElementById('a2ColDir').value;
+  const colComuna = document.getElementById('a2ColComuna').value;
+  
+  // Agrupar por inspector
+  const porInsp = {};
+  asig2Resultado.forEach(row=>{
+    const insp=row.INSPECTOR_ASIGNADO||'Sin_asignar';
+    if(!porInsp[insp]) porInsp[insp]=[];
+    if(row._coord) porInsp[insp].push({coord:{lat:row._coord.lat,lon:row._coord.lng},row});
+  });
+  
+  // Generar un KML multi-capa
+  const allCols = Object.keys(asig2Resultado[0]).filter(k=>k!=='_coord'&&k!=='_idx');
+  const schemaFields = allCols.map(c=>'<SimpleField type="string" name="'+escXml(c)+'"><displayName>'+escXml(c)+'</displayName></SimpleField>').join('');
+  
+  let folders = '';
+  Object.entries(porInsp).forEach(([insp,puntos])=>{
+    const schemaId='schema_'+insp.replace(/\s+/g,'_');
+    const placemarks=puntos.map(p=>{
+      const nombre=escXml(String(p.row[colDir]||''));
+      const simpleData=allCols.map(c=>'<SimpleData name="'+escXml(c)+'">'+escXml(/INGRESO|PLAZO/i.test(c)?formatDateDDMMYYYY(p.row[c]):String(p.row[c]||''))+'</SimpleData>').join('');
+      return'<Placemark><name>'+nombre+'</name><ExtendedData><SchemaData schemaUrl="#'+escXml(schemaId)+'">'+simpleData+'</SchemaData></ExtendedData><Point><coordinates>'+p.coord.lon+','+p.coord.lat+',0</coordinates></Point></Placemark>';
+    }).join('');
+    folders+='<Schema name="'+escXml(insp)+'" id="'+escXml(schemaId)+'">'+schemaFields+'</Schema><Folder><name>'+escXml(insp)+'</name>'+placemarks+'</Folder>';
+  });
+  
+  const kml='<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Asignacion Inspectores</name>'+folders+'</Document></kml>';
+  const blob=new Blob([kml],{type:'application/vnd.google-earth.kml+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='asignacion_inspectores.kml';a.click();
+}
+
+// ===== TAB 3: NORMALIZAR BATCH =====
+let normData = [];
+let normEditIdx = null;
+let normSugTimeout = null;
+
+const dz3 = document.getElementById('dz3');
+document.getElementById('fileNorm').addEventListener('change', e => e.target.files[0] && cargarNorm(e.target.files[0]));
+dz3.addEventListener('dragover', e=>{e.preventDefault();dz3.classList.add('drag')});
+dz3.addEventListener('dragleave', ()=>dz3.classList.remove('drag'));
+dz3.addEventListener('drop', e=>{e.preventDefault();dz3.classList.remove('drag');e.dataTransfer.files[0]&&cargarNorm(e.dataTransfer.files[0])});
+
+async function cargarNorm(file) {
+  document.getElementById('normStatusMsg').textContent = 'Leyendo...';
+  const rows = await leerArchivo(file);
+  if (!rows.length) { document.getElementById('normStatusMsg').textContent = 'Archivo vacío.'; return; }
+  normData = rows.map((row, i) => ({_idx:i, _original:'', _normalizada:'', _estado:'pendiente', _coord:null, _point:'', ...row}));
+  const cols = Object.keys(rows[0]);
+  const sel = document.getElementById('normColDir');
+  sel.innerHTML = cols.map(c=>'<option>'+escHtml(c)+'</option>').join('');
+  const guess = cols.find(c=>/dir|calle|direcc/i.test(c)) || cols[0];
+  if (guess) sel.value = guess;
+  document.getElementById('norm-config').style.display = 'block';
+  document.getElementById('normStatusMsg').textContent = rows.length + ' registros cargados.';
+  document.getElementById('lblNorm').innerHTML = '✅ <strong>'+escHtml(file.name)+'</strong> ('+rows.length+' registros)';
+  updateNormStats();
+}
+
+function updateNormStats() {
+  const total = normData.length;
+  const ok = normData.filter(r=>r._estado==='ok').length;
+  const fail = normData.filter(r=>r._estado==='fail').length;
+  const pend = normData.filter(r=>r._estado==='pendiente').length;
+  document.getElementById('normStatTotal').textContent = total || '—';
+  document.getElementById('normStatOk').textContent = total ? ok : '—';
+  document.getElementById('normStatFail').textContent = total ? fail : '—';
+  document.getElementById('normStatPend').textContent = total ? pend : '—';
+}
+
+async function iniciarNormalizacion() {
+  if (!normData.length) return;
+  const colDir = document.getElementById('normColDir').value;
+  document.getElementById('btnNorm').disabled = true;
+  document.getElementById('normProgressBar').style.display = 'block';
+  document.getElementById('normFiltro').style.display = 'block';
+  document.getElementById('normEmptyMsg').style.display = 'none';
+  document.getElementById('normTable').style.display = 'table';
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  const pendientes = normData.filter(r => r._estado === 'pendiente');
+  for (let i = 0; i < pendientes.length; i++) {
+    const row = pendientes[i];
+    const dir = String(row[colDir] || '').trim();
+    row._original = dir;
+    if (!dir) {
+      row._estado = 'fail';
+    } else {
+      const result = await normalizeAndGeocode(dir);
+      if (result.coord && result.dirNorm) {
+        row._estado = 'ok';
+        row._normalizada = result.dirNorm;
+        row._coord = result.coord;
+        row._point = 'POINT(' + result.coord.lng.toFixed(8) + ' ' + result.coord.lat.toFixed(8) + ')';
+        const com = getComunaForCoord(result.coord.lat, result.coord.lng);
+        if (com) {
+          const m = L.circleMarker([result.coord.lat, result.coord.lng], {radius:5,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.2,fillOpacity:.85}).addTo(map);
+          m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(dir)+'</div>');
+          markers.push(m);
+        }
+      } else {
+        row._estado = 'fail';
+        row._normalizada = result.dirNorm || '';
+      }
+    }
+    document.getElementById('normProgressFill').style.width = Math.round((i+1)/pendientes.length*100)+'%';
+    document.getElementById('normStatusMsg').textContent = 'Procesando ' + (i+1) + ' de ' + pendientes.length + '...';
+    updateNormStats();
+    if ((i+1) % 8 === 0) renderNormTable();
+    if ((i+1) % 5 === 0) await new Promise(r=>setTimeout(r,50));
+  }
+  renderNormTable();
+  const ok = normData.filter(r=>r._estado==='ok').length;
+  const fail = normData.filter(r=>r._estado==='fail').length;
+  document.getElementById('normStatusMsg').textContent = '✅ Listo. '+ok+' geocodificados, '+fail+' sin resultado.';
+  document.getElementById('btnDlNorm').style.display = 'block';
+  document.getElementById('btnNorm').disabled = false;
+  map.setView([-34.615,-58.44],12);
+}
+
+function renderNormTable() {
+  const filtro = document.getElementById('normFiltro').value;
+  const colDir = document.getElementById('normColDir') ? document.getElementById('normColDir').value : '';
+  const toShow = normData.filter(r => {
+    if (r._estado === 'pendiente') return false;
+    if (filtro === 'ok') return r._estado === 'ok';
+    if (filtro === 'fail') return r._estado === 'fail';
+    return true;
+  });
+  document.getElementById('normTable').style.display = toShow.length ? 'table' : 'none';
+  document.getElementById('normEmptyMsg').style.display = toShow.length ? 'none' : 'block';
+  const tbody = document.getElementById('normTableBody');
+  tbody.innerHTML = toShow.map(row => {
+    const dir = escHtml(row._original || String(row[colDir]||''));
+    const norm = row._normalizada ? '<span style="color:var(--accent);font-size:10px">'+escHtml(row._normalizada)+'</span>' : '<span style="color:var(--muted)">—</span>';
+    const pt = row._point ? '<span style="font-family:monospace;font-size:9px;color:var(--muted)">'+escHtml(row._point)+'</span>' : '<span style="color:var(--muted)">—</span>';
+    const editBtn = row._estado === 'fail' ? '<button onclick="abrirModalNorm('+row._idx+')" style="background:var(--accent2);border:none;border-radius:5px;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer">✏️</button>' : '';
+    const badge = row._estado === 'ok' ? '✅' : '❌';
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      +'<td style="color:var(--muted);font-family:monospace;font-size:10px;padding:5px 6px">'+(row._idx+1)+'</td>'
+      +'<td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;padding:5px 5px" title="'+dir+'">'+dir+'</td>'
+      +'<td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 5px">'+norm+'</td>'
+      +'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 5px">'+pt+'</td>'
+      +'<td style="padding:5px 5px;white-space:nowrap">'+badge+' '+editBtn+'</td></tr>';
+  }).join('');
+}
+
+function abrirModalNorm(idx) {
+  normEditIdx = idx;
+  const row = normData[idx];
+  const colDir = document.getElementById('normColDir').value;
+  document.getElementById('modalOriginal').textContent = 'Original: ' + (row._original || row[colDir] || '');
+  document.getElementById('modalInput').value = row._original || String(row[colDir]||'');
+  document.getElementById('modalMsg').textContent = '';
+  document.getElementById('modalSuggestions').style.display = 'none';
+  document.getElementById('modalSuggestions').innerHTML = '';
+  document.getElementById('normModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('modalInput').focus(), 100);
+}
+
+function cerrarModal() {
+  document.getElementById('normModal').style.display = 'none';
+  document.getElementById('modalSuggestions').style.display = 'none';
+  normEditIdx = null;
+}
+
+async function buscarSugerencias(val) {
+  clearTimeout(normSugTimeout);
+  const sug = document.getElementById('modalSuggestions');
+  if (!val || val.length < 4) { sug.style.display = 'none'; return; }
+  normSugTimeout = setTimeout(async () => {
+    try {
+      const url = 'https://servicios.usig.buenosaires.gob.ar/normalizar/?direccion='+encodeURIComponent(val)+'&geocodificar=TRUE&maxOptions=5';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.direccionesNormalizadas && data.direccionesNormalizadas.length) {
+        sug.innerHTML = data.direccionesNormalizadas.map(d =>
+          '<div onclick="seleccionarSugerencia(\''+escHtml(d.direccion)+'\')" style="padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);color:var(--text)" onmouseover="this.style.background=\'rgba(0,212,170,.1)\'" onmouseout="this.style.background=\'\'">'+escHtml(d.direccion)+'</div>'
+        ).join('');
+        sug.style.display = 'block';
+      } else {
+        sug.style.display = 'none';
+      }
+    } catch(e) { sug.style.display = 'none'; }
+  }, 350);
+}
+
+function seleccionarSugerencia(dir) {
+  document.getElementById('modalInput').value = dir;
+  document.getElementById('modalSuggestions').style.display = 'none';
+}
+
+async function confirmarCorreccion() {
+  if (normEditIdx === null) return;
+  const newDir = document.getElementById('modalInput').value.trim();
+  if (!newDir) return;
+  document.getElementById('modalMsg').textContent = 'Buscando...';
+  document.getElementById('modalSuggestions').style.display = 'none';
+  const result = await normalizeAndGeocode(newDir);
+  if (result.coord && result.dirNorm) {
+    const row = normData[normEditIdx];
+    row._estado = 'ok';
+    row._normalizada = result.dirNorm;
+    row._coord = result.coord;
+    row._point = 'POINT(' + result.coord.lng.toFixed(8) + ' ' + result.coord.lat.toFixed(8) + ')';
+    const com = getComunaForCoord(result.coord.lat, result.coord.lng);
+    if (com) {
+      const m = L.circleMarker([result.coord.lat, result.coord.lng],{radius:6,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
+      m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(newDir)+'</div>');
+      markers.push(m);
+    }
+    updateNormStats(); renderNormTable();
+    document.getElementById('btnDlNorm').style.display = 'block';
+    cerrarModal();
+  } else {
+    document.getElementById('modalMsg').textContent = '❌ No encontrado. Probá con otro formato.';
+  }
+}
+
+function descargarNorm() {
+  if (!normData.length) return;
+  const colDir = document.getElementById('normColDir').value;
+  const rows = normData.map(row => {
+    const out = {};
+    Object.keys(row).forEach(k => { if (!k.startsWith('_')) out[k] = row[k]; });
+    out['Dirección Normalizada'] = row._normalizada || '';
+    out['Geocodificación'] = row._point || '';
+    return out;
+  });
+  const headers = Object.keys(rows[0]);
+  const lines = [headers.join(';'), ...rows.map(r => headers.map(h=>String(r[h]||'')).join(';'))];
+  const blob = new Blob(['\uFEFF' + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'normalizado_geocodificado.csv';
+  a.click();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cerrarModal();
+  if (e.key === 'Enter' && document.getElementById('normModal').style.display === 'flex') confirmarCorreccion();
+});
+
+</script>
+
+<!-- Normalizar Batch - modal corrección -->
+<div id="normModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:360px;max-width:95%">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">✏️ Corregir dirección</div>
+    <div id="modalOriginal" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+    <div style="position:relative;margin-bottom:8px">
+      <input id="modalInput" type="text" placeholder="Escribí la dirección corregida" autocomplete="off"
+        style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none"
+        oninput="buscarSugerencias(this.value)">
+      <div id="modalSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;z-index:10;max-height:160px;overflow-y:auto"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1" onclick="confirmarCorreccion()">🔍 Reintentar</button>
+      <button class="btn btn-sec" style="flex:1" onclick="cerrarModal()">Cancelar</button>
+    </div>
+    <div class="msg" id="modalMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+</body>
+</html>
