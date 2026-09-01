@@ -1,43 +1,46 @@
 # 🗺️ Asignador de Comunas CABA
 
-Aplicación web desarrollada para normalizar direcciones, geolocalizar registros y asignar automáticamente las comunas de la Ciudad Autónoma de Buenos Aires (CABA) a partir de archivos Excel.
-
----
-
-## 📖 Descripción
-
-El objetivo de este proyecto es facilitar el procesamiento masivo de direcciones para tareas de inspección, fiscalización y análisis territorial.
-
-La aplicación permite importar archivos Excel, obtener las coordenadas geográficas de cada dirección, identificar la comuna correspondiente y visualizar toda la información sobre un mapa interactivo.
-
----
-
-## 🚀 Funcionalidades
-
-- 📄 Importación de archivos Excel (.xlsx)
-- 📍 Geolocalización automática de direcciones
-- 🏙️ Asignación automática de comunas
-- 🗺️ Visualización de resultados en mapa interactivo
-- 📊 Procesamiento masivo de registros
-- 📋 Exportación de resultados
-
----
-
-## 🛠️ Tecnologías utilizadas
-
-- HTML5
-- JavaScript
-- Leaflet.js
-- OpenStreetMap
-- SheetJS (XLSX)
+Aplicación web para normalizar direcciones, geolocalizarlas y asignar automáticamente la comuna y el barrio de la Ciudad Autónoma de Buenos Aires (CABA), pensada para tareas de inspección, fiscalización y análisis territorial. Corre 100% en el navegador, en un solo archivo HTML, sin necesidad de servidor ni instalación.
 
 ---
 
 ## 🌐 Aplicación en línea
 
-La aplicación puede utilizarse directamente desde:
-
 **https://derlismarce.github.io/Asignador-Comunas-CABA/**
+
+---
+
+## 🚀 Funcionalidades
+
+### 👷 Por Inspector
+Importa un Excel con columnas `INSPECTOR`, `DIRECCION` y `Geocodificación`, agrupa los puntos por inspector y permite descargar el recorrido de cada uno en KML (para Google Earth / Google My Maps) y en Excel — individualmente o todos juntos en un .zip.
+
+### 🔀 Asignar Inspectores
+A partir de dos archivos (direcciones con comuna, e inspectores con cupo por comuna), asigna cada dirección al inspector más cercano dentro de su comuna, respetando los cupos configurados. El algoritmo se refina en varias rondas para evitar que puntos queden asignados a un inspector lejano. Los puntos se pueden reasignar manualmente haciendo clic en el mapa, y el cambio se refleja automáticamente en las descargas.
+
+### 🌐 Batch (normalización masiva)
+Normaliza y geocodifica listas grandes de direcciones (miles de registros) de forma rápida:
+- Un motor de normalización **local**, con el callejero oficial de CABA embebido y tolerancia a errores de tipeo (distancia de Levenshtein), resuelve la mayoría de las direcciones sin usar la red.
+- Las direcciones resueltas localmente se geocodifican en **lotes de 10 en paralelo** contra el servicio de USIG, en vez de una petición por dirección.
+- Lo que el motor local no puede resolver cae a un normalizador de direcciones por texto libre, como respaldo.
+- También acepta coordenadas ya resueltas (formato grados/minutos/segundos o decimal) y hace geocodificación inversa para obtener calle y altura.
+- Devuelve dirección normalizada, punto geográfico (WKT), comuna y barrio; exportable a CSV, Excel y KML.
+
+### 🎨 Otras
+- Modo claro / oscuro, con mapa base de OpenStreetMap en claro y CARTO Dark Matter en oscuro.
+- Checkbox para mostrar u ocultar los polígonos de comuna sobre el mapa.
+- Mini-juego "Space Cleaner" como créditos del proyecto (botón GCBA).
+
+---
+
+## 🛠️ Tecnologías utilizadas
+
+- HTML5 + JavaScript (sin frameworks ni build step)
+- [Leaflet.js](https://leafletjs.com/) para el mapa
+- [SheetJS (xlsx.js)](https://sheetjs.com/) para leer/escribir Excel
+- Mapas base: [OpenStreetMap](https://www.openstreetmap.org/) y [CARTO Basemaps](https://carto.com/basemaps/)
+- Geocodificación y callejero oficial: [servicios USIG (GCBA)](https://usig.buenosaires.gob.ar/)
+- Límites de comuna: dataset oficial del [Gobierno de la Ciudad de Buenos Aires](https://data.buenosaires.gob.ar/)
 
 ---
 
@@ -46,10 +49,11 @@ La aplicación puede utilizarse directamente desde:
 ```
 Asignador-Comunas-CABA
 │
-├── index.html
-├── comunas_caba.js
+├── index.html   (aplicación completa, autocontenida)
 └── README.md
 ```
+
+Todos los datos (callejero, barrios, límites de comuna) están embebidos dentro de `index.html`, así que la app funciona sin conexión a internet salvo para geocodificar direcciones nuevas contra USIG.
 
 ---
 
@@ -60,6 +64,16 @@ Optimizar el procesamiento de grandes volúmenes de direcciones para organismos 
 ---
 
 ## 🔄 Historial de versiones
+
+### Versión 2.0
+
+- Rediseño completo: pestañas **Por Inspector**, **Asignar Inspectores** y **Batch**.
+- Motor de normalización de direcciones local + geocodificación en lote (mucho más rápido en archivos grandes).
+- Reasignación manual de inspectores desde el mapa.
+- Algoritmo de asignación por cercanía mejorado (varias rondas de refinamiento).
+- Límites de comuna actualizados con dataset oficial, sin huecos entre comunas.
+- Modo claro / oscuro.
+- Corrección de bugs de parseo de CSV/Excel (comillas con separador embebido, encabezados con espacios).
 
 ### Versión 1.0
 
@@ -76,8 +90,6 @@ Optimizar el procesamiento de grandes volúmenes de direcciones para organismos 
 - Búsqueda individual de direcciones.
 - Estadísticas por comuna.
 - Exportación en PDF.
-- Mejoras de rendimiento.
-- Optimización de la interfaz.
 
 ---
 
