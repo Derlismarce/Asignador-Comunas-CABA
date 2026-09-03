@@ -212,6 +212,16 @@ tbody tr:hover { background: rgba(255,255,255,.03); }
         </div>
         <div id="norm-config" style="display:none;margin-top:10px">
           <div class="col-selector"><label>Col. Dirección:</label><select id="normColDir"></select></div>
+          <div class="col-selector">
+            <label>Tolerancia:</label>
+            <select id="normToleranciaVereda">
+              <option value="1">1 metro</option>
+              <option value="5">5 metros</option>
+              <option value="10" selected>10 metros (Recomendado)</option>
+              <option value="20">20 metros</option>
+              <option value="50">50 metros</option>
+            </select>
+          </div>
           <button class="btn" id="btnNorm" onclick="iniciarNormalizacion()">▶ Normalizar y geocodificar</button>
           <button class="btn btn-sec" id="btnDlNorm" style="display:none" onclick="descargarNorm()">⬇ Descargar CSV</button>
           <button class="btn btn-sec" id="btnDlNormXlsx" style="display:none" onclick="descargarNormXLSX()">⬇ Descargar Excel</button>
@@ -1723,6 +1733,7 @@ async function iniciarNormalizacion() {
   markers.forEach(m=>map.removeLayer(m)); markers=[];
   document.getElementById('normStatusMsg').textContent = 'Cargando índice de veredas...';
   await cargarVeredasCaba();
+  const toleranciaVereda = parseFloat(document.getElementById('normToleranciaVereda').value) || 10;
   const pendientes = normData.filter(r => r._estado === 'pendiente');
   const total = pendientes.length;
   let hechos = 0;
@@ -1743,7 +1754,7 @@ async function iniciarNormalizacion() {
       const com = getComunaForCoord(coord.lat, coord.lng);
       row._comuna = com || '';
       row._barrio = getBarrioLocalBatch(coord.lat, coord.lng);
-      row._claveVereda = getClaveVeredaCercana(coord.lat, coord.lng);
+      row._claveVereda = getClaveVeredaCercana(coord.lat, coord.lng, toleranciaVereda);
       if (com) {
         const m = L.circleMarker([coord.lat, coord.lng], {radius:5,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.2,fillOpacity:.85}).addTo(map);
         m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||dir)+'</div>');
@@ -1951,7 +1962,8 @@ async function confirmarCorreccion() {
     const com = getComunaForCoord(result.coord.lat, result.coord.lng);
     row._comuna = com || '';
     row._barrio = getBarrioLocalBatch(result.coord.lat, result.coord.lng);
-    row._claveVereda = getClaveVeredaCercana(result.coord.lat, result.coord.lng);
+    const toleranciaVereda = parseFloat(document.getElementById('normToleranciaVereda').value) || 10;
+    row._claveVereda = getClaveVeredaCercana(result.coord.lat, result.coord.lng, toleranciaVereda);
     if (com) {
       const m = L.circleMarker([result.coord.lat, result.coord.lng],{radius:6,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
       m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||newDir)+'</div>');
