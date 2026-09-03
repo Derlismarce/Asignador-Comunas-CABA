@@ -247,6 +247,7 @@ tbody tr:hover { background: rgba(255,255,255,.03); }
               <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Point</th>
               <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Comuna</th>
               <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Barrio</th>
+              <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)">Clave Vereda</th>
               <th style="background:var(--bg);padding:6px 6px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border)"></th>
             </tr>
           </thead>
@@ -1610,6 +1611,74 @@ function getBarrioLocalBatch(lat, lng) {
   return '';
 }
 
+// ===== Clave Vereda (solo pestaña Batch) =====
+// veredas_caba.json trae ~326.000 puntos [lat,lon,clave] (uno por tramo de vereda de
+// CABA). No lo embebemos en el HTML (pesaría demasiado) sino que se descarga aparte,
+// una sola vez, la primera vez que hace falta. Para no comparar contra las 326.000
+// filas en cada dirección, se arma una grilla (celdas de ~55m) y solo se revisan la
+// celda del punto y las 8 vecinas — así la búsqueda de la vereda más cercana es
+// prácticamente instantánea aunque el dataset sea grande.
+const VEREDA_CELDA = 0.0005; // grados (~55m de lado en CABA)
+let veredasIndice = null; // Map: "fila_col" -> [[lat,lon,clave], ...]
+let veredasCargando = null;
+
+function veredaCelda(lat, lng) {
+  return Math.round(lat / VEREDA_CELDA) + '_' + Math.round(lng / VEREDA_CELDA);
+}
+
+async function cargarVeredasCaba() {
+  if (veredasIndice) return veredasIndice;
+  if (veredasCargando) return veredasCargando;
+  veredasCargando = (async () => {
+    try {
+      const res = await fetch('veredas_caba.json');
+      const puntos = await res.json();
+      const idx = new Map();
+      for (let i = 0; i < puntos.length; i++) {
+        const p = puntos[i];
+        const k = veredaCelda(p[0], p[1]);
+        if (!idx.has(k)) idx.set(k, []);
+        idx.get(k).push(p);
+      }
+      veredasIndice = idx;
+      return idx;
+    } catch (e) {
+      console.warn('No se pudo cargar veredas_caba.json:', e);
+      veredasIndice = new Map(); // vacío: la app sigue funcionando sin Clave Vereda
+      return veredasIndice;
+    }
+  })();
+  return veredasCargando;
+}
+
+// Distancia aproximada en metros entre dos puntos WGS84 (suficiente para comparar
+// distancias cortas dentro de CABA, no hace falta la fórmula exacta de Haversine).
+function distMetrosAprox(lat1, lng1, lat2, lng2) {
+  const dLat = (lat1 - lat2) * 111320;
+  const dLng = (lng1 - lng2) * 111320 * Math.cos(lat1 * Math.PI / 180);
+  return Math.sqrt(dLat * dLat + dLng * dLng);
+}
+
+function getClaveVeredaCercana(lat, lng, maxMetros) {
+  if (!veredasIndice || !veredasIndice.size) return '';
+  maxMetros = maxMetros || 80;
+  const fila = Math.round(lat / VEREDA_CELDA);
+  const col = Math.round(lng / VEREDA_CELDA);
+  let mejor = null, mejorD = Infinity;
+  for (let df = -1; df <= 1; df++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const candidatos = veredasIndice.get((fila + df) + '_' + (col + dc));
+      if (!candidatos) continue;
+      for (let i = 0; i < candidatos.length; i++) {
+        const p = candidatos[i];
+        const d = distMetrosAprox(lat, lng, p[0], p[1]);
+        if (d < mejorD) { mejorD = d; mejor = p; }
+      }
+    }
+  }
+  return (mejor && mejorD <= maxMetros) ? mejor[2] : '';
+}
+
 const dz3 = document.getElementById('dz3');
 document.getElementById('fileNorm').addEventListener('change', e => e.target.files[0] && cargarNorm(e.target.files[0]));
 dz3.addEventListener('dragover', e=>{e.preventDefault();dz3.classList.add('drag')});
@@ -1652,6 +1721,8 @@ async function iniciarNormalizacion() {
   document.getElementById('normEmptyMsg').style.display = 'none';
   document.getElementById('normTable').style.display = 'table';
   markers.forEach(m=>map.removeLayer(m)); markers=[];
+  document.getElementById('normStatusMsg').textContent = 'Cargando índice de veredas...';
+  await cargarVeredasCaba();
   const pendientes = normData.filter(r => r._estado === 'pendiente');
   const total = pendientes.length;
   let hechos = 0;
@@ -1661,8 +1732,8 @@ async function iniciarNormalizacion() {
     updateNormStats();
   };
 
-  // Aplica el resultado final a una fila (comuna/barrio locales, marcador en el mapa).
-  // Misma lógica de siempre, solo que ahora la llaman los 3 caminos posibles.
+  // Aplica el resultado final a una fila (comuna/barrio/clave vereda locales, marcador
+  // en el mapa). Misma lógica de siempre, solo que ahora la llaman los 3 caminos posibles.
   function aplicarResultado(row, dir, dirNorm, coord, exito) {
     if (exito) {
       row._estado = 'ok';
@@ -1672,6 +1743,7 @@ async function iniciarNormalizacion() {
       const com = getComunaForCoord(coord.lat, coord.lng);
       row._comuna = com || '';
       row._barrio = getBarrioLocalBatch(coord.lat, coord.lng);
+      row._claveVereda = getClaveVeredaCercana(coord.lat, coord.lng);
       if (com) {
         const m = L.circleMarker([coord.lat, coord.lng], {radius:5,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.2,fillOpacity:.85}).addTo(map);
         m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||dir)+'</div>');
@@ -1784,6 +1856,7 @@ function renderNormTable() {
     const pt = row._point ? '<span style="font-family:monospace;font-size:9px;color:var(--muted)">'+escHtml(row._point)+'</span>' : '<span style="color:var(--muted)">—</span>';
     const com = row._comuna ? '<span class="cb" style="background:'+(COLORS[row._comuna]||'#666')+';color:#000">'+row._comuna+'</span>' : '<span style="color:var(--muted)">—</span>';
     const bar = row._barrio ? '<span style="font-size:10px">'+escHtml(row._barrio)+'</span>' : '<span style="color:var(--muted)">—</span>';
+    const cv = row._claveVereda ? '<span style="font-family:monospace;font-size:9px;color:var(--muted)">'+escHtml(row._claveVereda)+'</span>' : '<span style="color:var(--muted)">—</span>';
     const editBtn = row._estado === 'fail' ? '<button onclick="abrirModalNorm('+row._idx+')" style="background:var(--accent2);border:none;border-radius:5px;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer">✏️</button>' : '';
     const badge = row._estado === 'ok' ? '✅' : '❌';
     return '<tr style="border-bottom:1px solid var(--border)">'
@@ -1793,6 +1866,7 @@ function renderNormTable() {
       +'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 5px">'+pt+'</td>'
       +'<td style="padding:5px 5px;white-space:nowrap">'+com+'</td>'
       +'<td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 5px">'+bar+'</td>'
+      +'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 5px">'+cv+'</td>'
       +'<td style="padding:5px 5px;white-space:nowrap">'+badge+' '+editBtn+'</td></tr>';
   }).join('');
 }
@@ -1848,6 +1922,7 @@ async function confirmarCorreccion() {
   if (!newDir) return;
   document.getElementById('modalMsg').textContent = 'Buscando...';
   document.getElementById('modalSuggestions').style.display = 'none';
+  await cargarVeredasCaba();
   const coordDetectada = parseCoordenadasTexto(newDir);
   let result, exito;
   if (coordDetectada) {
@@ -1876,6 +1951,7 @@ async function confirmarCorreccion() {
     const com = getComunaForCoord(result.coord.lat, result.coord.lng);
     row._comuna = com || '';
     row._barrio = getBarrioLocalBatch(result.coord.lat, result.coord.lng);
+    row._claveVereda = getClaveVeredaCercana(result.coord.lat, result.coord.lng);
     if (com) {
       const m = L.circleMarker([result.coord.lat, result.coord.lng],{radius:6,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
       m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||newDir)+'</div>');
@@ -1901,6 +1977,7 @@ function descargarNorm() {
     out['Geocodificación'] = row._point || '';
     out['Comuna'] = row._comuna || '';
     out['Barrio'] = row._barrio || '';
+    out['Clave Vereda'] = row._claveVereda || '';
     out['Latitud'] = row._coord ? row._coord.lat : '';
     out['Longitud'] = row._coord ? row._coord.lng : '';
     return out;
@@ -1923,6 +2000,7 @@ function descargarNormXLSX() {
     out['Geocodificaci\u00F3n'] = row._point || '';
     out['Comuna'] = row._comuna || '';
     out['Barrio'] = row._barrio || '';
+    out['Clave Vereda'] = row._claveVereda || '';
     out['Latitud'] = row._coord ? row._coord.lat : '';
     out['Longitud'] = row._coord ? row._coord.lng : '';
     return out;
@@ -1940,7 +2018,7 @@ function descargarNormKML() {
   if (!conCoord.length) return;
   const colDir = document.getElementById('normColDir').value;
   const allCols = Object.keys(normData[0]).filter(k => !k.startsWith('_'));
-  const extraCols = ['Dirección Normalizada', 'Comuna', 'Barrio', 'Latitud', 'Longitud'];
+  const extraCols = ['Dirección Normalizada', 'Comuna', 'Barrio', 'Clave Vereda', 'Latitud', 'Longitud'];
   const schemaId = 'schema_normalizado';
   const schemaFields = allCols.concat(extraCols).map(c=>'<SimpleField type="string" name="'+escXml(c)+'"><displayName>'+escXml(c)+'</displayName></SimpleField>').join('');
   const schema = '<Schema name="Normalizado" id="'+schemaId+'">'+schemaFields+'</Schema>';
@@ -1950,6 +2028,7 @@ function descargarNormKML() {
     simpleData += '<SimpleData name="Dirección Normalizada">'+escXml(row._normalizada||'')+'</SimpleData>';
     simpleData += '<SimpleData name="Comuna">'+escXml(row._comuna||'')+'</SimpleData>';
     simpleData += '<SimpleData name="Barrio">'+escXml(row._barrio||'')+'</SimpleData>';
+    simpleData += '<SimpleData name="Clave Vereda">'+escXml(row._claveVereda||'')+'</SimpleData>';
     simpleData += '<SimpleData name="Latitud">'+escXml(row._coord.lat)+'</SimpleData>';
     simpleData += '<SimpleData name="Longitud">'+escXml(row._coord.lng)+'</SimpleData>';
     const extended = '<ExtendedData><SchemaData schemaUrl="#'+schemaId+'">'+simpleData+'</SchemaData></ExtendedData>';
