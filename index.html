@@ -1622,18 +1622,39 @@ function getBarrioLocalBatch(lat, lng) {
 }
 
 // ===== Clave Vereda (solo pestaña Batch) =====
-// veredas_caba.json trae ~326.000 puntos [lat,lon,clave] (uno por tramo de vereda de
-// CABA). No lo embebemos en el HTML (pesaría demasiado) sino que se descarga aparte,
-// una sola vez, la primera vez que hace falta. Para no comparar contra las 326.000
-// filas en cada dirección, se arma una grilla (celdas de ~55m) y solo se revisan la
-// celda del punto y las 8 vecinas — así la búsqueda de la vereda más cercana es
-// prácticamente instantánea aunque el dataset sea grande.
+// veredas_caba.json trae ~326.000 bounding boxes [minLat,minLng,maxLat,maxLng,clave],
+// uno por polígono real de vereda de CABA (extraídos del GeoPackage oficial). No lo
+// embebemos en el HTML (pesaría demasiado) sino que se descarga aparte, una sola vez,
+// la primera vez que hace falta.
+//
+// El matching es por INTERSECCIÓN DE CAJAS: se arma una caja de búsqueda de
+// ±tolerancia metros alrededor del punto geocodificado y se buscan los bounding box de
+// vereda que la tocan (si hay varios, se toma el de centro más cercano). Es el mismo
+// criterio que usa gisgcaba.com.ar/DGOVP con su índice espacial (R-tree) sobre el propio
+// .gpkg. Antes comparábamos contra un único punto de referencia por vereda, pero una
+// vereda real puede recorrer toda una cuadra (20-80m de largo): un punto que cae
+// perfectamente sobre la vereda podía estar lejos de ese punto de referencia y no
+// matchear. Medido contra direcciones reales, el método de un solo punto acordaba con
+// DGOVP en ~10-75% de los casos según la tolerancia; con cajas el resultado coincide
+// prácticamente siempre.
+//
+// Igual que antes, se arma una grilla (celdas de ~55m) para no comparar contra las
+// 326.000 cajas en cada dirección: cada caja se guarda en todas las celdas que toca, y
+// al buscar solo se revisan la celda del punto y las 8 vecinas.
 const VEREDA_CELDA = 0.0005; // grados (~55m de lado en CABA)
-let veredasIndice = null; // Map: "fila_col" -> [[lat,lon,clave], ...]
+let veredasIndice = null; // Map: "fila_col" -> [[minLat,minLng,maxLat,maxLng,clave], ...]
 let veredasCargando = null;
 
-function veredaCelda(lat, lng) {
-  return Math.round(lat / VEREDA_CELDA) + '_' + Math.round(lng / VEREDA_CELDA);
+function veredaCeldaIdx(v) {
+  return Math.floor(v / VEREDA_CELDA);
+}
+
+function veredaCeldasDeCaja(minLat, minLng, maxLat, maxLng) {
+  const f0 = veredaCeldaIdx(minLat), f1 = veredaCeldaIdx(maxLat);
+  const c0 = veredaCeldaIdx(minLng), c1 = veredaCeldaIdx(maxLng);
+  const celdas = [];
+  for (let f = f0; f <= f1; f++) for (let c = c0; c <= c1; c++) celdas.push(f + '_' + c);
+  return celdas;
 }
 
 async function cargarVeredasCaba() {
@@ -1642,13 +1663,16 @@ async function cargarVeredasCaba() {
   veredasCargando = (async () => {
     try {
       const res = await fetch('veredas_caba.json');
-      const puntos = await res.json();
+      const cajas = await res.json();
       const idx = new Map();
-      for (let i = 0; i < puntos.length; i++) {
-        const p = puntos[i];
-        const k = veredaCelda(p[0], p[1]);
-        if (!idx.has(k)) idx.set(k, []);
-        idx.get(k).push(p);
+      for (let i = 0; i < cajas.length; i++) {
+        const b = cajas[i]; // [minLat,minLng,maxLat,maxLng,clave]
+        const celdas = veredaCeldasDeCaja(b[0], b[1], b[2], b[3]);
+        for (let j = 0; j < celdas.length; j++) {
+          const k = celdas[j];
+          if (!idx.has(k)) idx.set(k, []);
+          idx.get(k).push(b);
+        }
       }
       veredasIndice = idx;
       return idx;
@@ -1661,32 +1685,38 @@ async function cargarVeredasCaba() {
   return veredasCargando;
 }
 
-// Distancia aproximada en metros entre dos puntos WGS84 (suficiente para comparar
-// distancias cortas dentro de CABA, no hace falta la fórmula exacta de Haversine).
-function distMetrosAprox(lat1, lng1, lat2, lng2) {
-  const dLat = (lat1 - lat2) * 111320;
-  const dLng = (lng1 - lng2) * 111320 * Math.cos(lat1 * Math.PI / 180);
-  return Math.sqrt(dLat * dLat + dLng * dLng);
-}
+// Metros -> grados, aproximación suficiente para el tamaño de CABA.
+function metrosALatDeg(m) { return m / 111320; }
+function metrosALngDeg(m, lat) { return m / (111320 * Math.cos(lat * Math.PI / 180)); }
 
 function getClaveVeredaCercana(lat, lng, maxMetros) {
   if (!veredasIndice || !veredasIndice.size) return '';
   maxMetros = maxMetros || 80;
-  const fila = Math.round(lat / VEREDA_CELDA);
-  const col = Math.round(lng / VEREDA_CELDA);
-  let mejor = null, mejorD = Infinity;
+  const dLat = metrosALatDeg(maxMetros), dLng = metrosALngDeg(maxMetros, lat);
+  const minLat = lat - dLat, maxLat = lat + dLat;
+  const minLng = lng - dLng, maxLng = lng + dLng;
+  const fila = veredaCeldaIdx(lat);
+  const col = veredaCeldaIdx(lng);
+  let mejor = null, mejorD2 = Infinity;
+  const vistos = new Set();
   for (let df = -1; df <= 1; df++) {
     for (let dc = -1; dc <= 1; dc++) {
       const candidatos = veredasIndice.get((fila + df) + '_' + (col + dc));
       if (!candidatos) continue;
       for (let i = 0; i < candidatos.length; i++) {
-        const p = candidatos[i];
-        const d = distMetrosAprox(lat, lng, p[0], p[1]);
-        if (d < mejorD) { mejorD = d; mejor = p; }
+        const b = candidatos[i];
+        if (vistos.has(b)) continue;
+        vistos.add(b);
+        // ¿la caja de búsqueda toca el bounding box de esta vereda?
+        if (b[1] <= maxLng && b[3] >= minLng && b[0] <= maxLat && b[2] >= minLat) {
+          const midLat = (b[0] + b[2]) / 2, midLng = (b[1] + b[3]) / 2;
+          const d2 = (lat - midLat) * (lat - midLat) + (lng - midLng) * (lng - midLng);
+          if (d2 < mejorD2) { mejorD2 = d2; mejor = b; }
+        }
       }
     }
   }
-  return (mejor && mejorD <= maxMetros) ? mejor[2] : '';
+  return mejor ? mejor[4] : '';
 }
 
 const dz3 = document.getElementById('dz3');

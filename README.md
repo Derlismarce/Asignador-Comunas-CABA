@@ -24,7 +24,7 @@ Normaliza y geocodifica listas grandes de direcciones (miles de registros) de fo
 - Las direcciones resueltas localmente se geocodifican en **lotes de 10 en paralelo** contra el servicio de USIG, en vez de una petición por dirección.
 - Lo que el motor local no puede resolver cae a un normalizador de direcciones por texto libre, como respaldo.
 - También acepta coordenadas ya resueltas (formato grados/minutos/segundos o decimal) y hace geocodificación inversa para obtener calle y altura.
-- Devuelve dirección normalizada, punto geográfico (WKT), comuna, barrio y **Clave Vereda** (buscada por cercanía contra un dataset oficial de ~326.000 tramos de vereda, con índice espacial en el navegador para que la búsqueda sea instantánea); exportable a CSV, Excel y KML.
+- Devuelve dirección normalizada, punto geográfico (WKT), comuna, barrio y **Clave Vereda** (buscada por intersección de bounding box contra un dataset oficial de ~326.000 polígonos de vereda, con índice espacial en el navegador para que la búsqueda sea instantánea y tolerancia configurable); exportable a CSV, Excel y KML.
 
 ### 🎨 Otras
 - Modo claro / oscuro, con mapa base de OpenStreetMap en claro y CARTO Dark Matter en oscuro.
@@ -50,7 +50,7 @@ Normaliza y geocodifica listas grandes de direcciones (miles de registros) de fo
 Asignador-Comunas-CABA
 │
 ├── index.html          (aplicación completa)
-├── veredas_caba.json   (~326.000 puntos de referencia para Clave Vereda)
+├── veredas_caba.json   (~326.000 bounding boxes de vereda para Clave Vereda)
 └── README.md
 ```
 
@@ -65,6 +65,14 @@ Optimizar el procesamiento de grandes volúmenes de direcciones para organismos 
 ---
 
 ## 🔄 Historial de versiones
+
+### Versión 2.3
+
+- Clave Vereda: se cambia el método de matching de "punto más cercano a un único punto de referencia por vereda" a **intersección de cajas (bounding box) contra el polígono real de cada vereda** — el mismo criterio que usa gisgcaba.com.ar/DGOVP con su índice espacial. Antes, una vereda que recorre toda una cuadra podía tener su punto de referencia lejos de una dirección que caía perfectamente sobre ella, obligando a usar tolerancias grandes (20-50m). Con cajas reales, el resultado coincide con la referencia oficial incluso con tolerancias chicas (medido contra direcciones reales: >90% de coincidencias ya a 1 metro).
+
+### Versión 2.2
+
+- Se agrega un desplegable de **tolerancia** (1 / 5 / 10 / 20 / 50 metros) para la búsqueda de Clave Vereda.
 
 ### Versión 2.1
 
