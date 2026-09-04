@@ -663,7 +663,7 @@ async function loadInspectorFile(file){
 
 function parseUSIG(str){
   if(!str)return null;
-  const m=String(str).match(/POINT\(\s*(-?[0-9.]+)\s+(-?[0-9.]+)\)/i);
+  const m=String(str).match(/POINT\s*\(\s*(-?[0-9.]+)[\s,]+(-?[0-9.]+)\s*\)/i);
   if(!m)return null;
   const x=parseFloat(m[1]),y=parseFloat(m[2]);
   // Si ya viene en grados decimales WGS84 (lon/lat), usar directo sin reproyectar
