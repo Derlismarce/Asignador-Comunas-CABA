@@ -141,6 +141,10 @@ tbody tr:hover { background: rgba(255,255,255,.03); }
 
     <!-- TAB 1: Por Inspector -->
     <div class="tab-pane active" id="pane1">
+      <div style="display:flex;gap:6px;padding:10px 14px 0">
+        <button class="btn btn-sec" id="btnUndoInsp" disabled onclick="undoInspector()" style="flex:1">↩️ Deshacer</button>
+        <button class="btn btn-sec" id="btnClearInsp" onclick="limpiarInspector()" style="flex:1">✕ Limpiar</button>
+      </div>
       <div class="panel-section">
         <div class="section-title">📂 Cargar Excel de inspectores</div>
         <div class="upload-zone" id="dz1" onclick="document.getElementById('fileInputInsp').click()">
@@ -167,6 +171,10 @@ tbody tr:hover { background: rgba(255,255,255,.03); }
 
     <!-- TAB 2: Asignar Inspectores -->
     <div class="tab-pane" id="pane2">
+      <div style="display:flex;gap:6px;padding:10px 14px 0">
+        <button class="btn btn-sec" id="btnUndoAsig2" disabled onclick="undoAsignacion()" style="flex:1">↩️ Deshacer</button>
+        <button class="btn btn-sec" id="btnClearAsig2" onclick="limpiarAsig2()" style="flex:1">✕ Limpiar</button>
+      </div>
       <div class="panel-section">
         <div class="section-title">📂 Archivo 1 — Direcciones con comunas</div>
         <div class="upload-zone" id="dz2a" onclick="document.getElementById('fileAsig1').click()">
@@ -202,6 +210,10 @@ tbody tr:hover { background: rgba(255,255,255,.03); }
 
     <!-- TAB 3: Normalizar Batch -->
     <div class="tab-pane" id="pane3">
+      <div style="display:flex;gap:6px;padding:10px 14px 0">
+        <button class="btn btn-sec" id="btnUndoNorm" disabled onclick="undoNormalizacion()" style="flex:1">↩️ Deshacer</button>
+        <button class="btn btn-sec" id="btnClearNorm" onclick="limpiarNorm()" style="flex:1">✕ Limpiar</button>
+      </div>
       <div class="panel-section">
         <div class="section-title">📂 Cargar CSV / Excel</div>
         <div class="upload-zone" id="dz3" onclick="document.getElementById('fileNorm').click()">
@@ -422,6 +434,8 @@ function toggleTheme(claro) {
 })();
 
 let markers=[], allData=[], inspData=[], inspResults={};
+const UNDO_MAX=5;
+let undoInsp=[], undoAsig2=[], undoNorm=[];
 
 // ===== TABS =====
 function switchTab(idx) {
@@ -646,19 +660,56 @@ dz1.addEventListener('dragover',e=>{e.preventDefault();dz1.classList.add('drag')
 dz1.addEventListener('dragleave',()=>dz1.classList.remove('drag'));
 dz1.addEventListener('drop',e=>{e.preventDefault();dz1.classList.remove('drag');e.dataTransfer.files[0]&&loadInspectorFile(e.dataTransfer.files[0])});
 
-async function loadInspectorFile(file){
-  document.getElementById('statusInsp').textContent='Leyendo...';
-  const rows = await leerArchivo(file);
-  if(!rows.length){document.getElementById('statusInsp').textContent='Archivo vacío.';return;}
-  inspData=rows;
-  const cols=Object.keys(rows[0]);
+function poblarColumnasInsp(cols){
   ['colInspector','colDireccion','colCoords'].forEach(id=>{
     document.getElementById(id).innerHTML=cols.map(c=>'<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>').join('');
   });
   const gi=(sel,kws)=>{const f=cols.find(c=>kws.some(k=>c.toLowerCase().includes(k)));if(f)document.getElementById(sel).value=f;};
   gi('colInspector',['inspector']);gi('colDireccion',['direcc','calle']);gi('colCoords',['geo','coord','point']);
+}
+
+async function loadInspectorFile(file){
+  pushUndoInsp();
+  document.getElementById('statusInsp').textContent='Leyendo...';
+  const rows = await leerArchivo(file);
+  if(!rows.length){document.getElementById('statusInsp').textContent='Archivo vacío.';undoInsp.pop();document.getElementById('btnUndoInsp').disabled=!undoInsp.length;return;}
+  inspData=rows;
+  poblarColumnasInsp(Object.keys(rows[0]));
   document.getElementById('insp-config').style.display='block';
   document.getElementById('statusInsp').textContent=rows.length+' registros cargados.';
+}
+
+// ===== Deshacer / Limpiar (Por Inspector) =====
+function pushUndoInsp(){
+  undoInsp.push(JSON.parse(JSON.stringify({inspData, inspResults})));
+  if(undoInsp.length>UNDO_MAX) undoInsp.shift();
+  const b=document.getElementById('btnUndoInsp'); if(b) b.disabled=false;
+}
+
+function undoInspector(){
+  if(!undoInsp.length){ document.getElementById('statusInsp').textContent='Nada para deshacer.'; return; }
+  const s=undoInsp.pop();
+  inspData=s.inspData; inspResults=s.inspResults;
+  if(inspData.length){
+    poblarColumnasInsp(Object.keys(inspData[0]));
+    document.getElementById('insp-config').style.display='block';
+  } else {
+    document.getElementById('insp-config').style.display='none';
+  }
+  renderInspectorResults();
+  if(!Object.keys(inspResults).length){
+    document.getElementById('statusInsp').textContent = inspData.length ? (inspData.length+' registros cargados.') : '↩️ Deshecho.';
+  }
+  document.getElementById('btnUndoInsp').disabled=!undoInsp.length;
+}
+
+function limpiarInspector(){
+  pushUndoInsp();
+  inspData=[]; inspResults={};
+  document.getElementById('fileInputInsp').value='';
+  document.getElementById('insp-config').style.display='none';
+  renderInspectorResults();
+  document.getElementById('statusInsp').textContent='🗑️ Pestaña limpiada.';
 }
 
 function parseUSIG(str){
@@ -801,25 +852,37 @@ async function procesarInspectores(){
   const ci=document.getElementById('colInspector').value;
   const cd=document.getElementById('colDireccion').value;
   const cc=document.getElementById('colCoords').value;
-  markers.forEach(m=>map.removeLayer(m));markers=[];
+  pushUndoInsp();
   inspResults={};
   inspData.forEach(row=>{
     const insp=String(row[ci]||'SIN_INSPECTOR').trim();
     if(!inspResults[insp])inspResults[insp]=[];
-    inspResults[insp].push({row,coord:parseUSIG(row[cc])});
+    inspResults[insp].push({row,coord:parseUSIG(row[cc]),dirText:String(row[cd]||'')});
   });
+  renderInspectorResults();
+}
+
+// Redibuja marcadores + lista de inspectores a partir de inspResults. Separado de
+// procesarInspectores() para poder reusarlo desde undoInspector() sin recalcular nada.
+function renderInspectorResults(){
+  markers.forEach(m=>map.removeLayer(m));markers=[];
   const names=Object.keys(inspResults);
+  const list=document.getElementById('inspectorList');
+  if(!names.length){
+    list.innerHTML='<div class="no-data">Cargá un Excel para ver los inspectores</div>';
+    document.getElementById('btnZip').style.display='none';
+    return;
+  }
   names.forEach((insp,idx)=>{
     const color=PAL[idx%PAL.length];
     inspResults[insp].forEach(p=>{
       if(p.coord){
         const m=L.circleMarker([p.coord.lat,p.coord.lon],{radius:7,fillColor:color,color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
-        m.bindPopup('<div class="popup-title">'+insp+'</div><div class="popup-sub">'+(p.row[cd]||'')+'</div>');
+        m.bindPopup('<div class="popup-title">'+insp+'</div><div class="popup-sub">'+(p.dirText||'')+'</div>');
         markers.push(m);
       }
     });
   });
-  const list=document.getElementById('inspectorList');
   list.innerHTML=names.map((insp,idx)=>{
     const puntos=inspResults[insp];
     const color=PAL[idx%PAL.length];
@@ -969,6 +1032,7 @@ async function leerArchivo(file) {
 }
 
 async function cargarBase(file) {
+  pushUndoAsig2();
   document.getElementById('statusAsig2').textContent='Leyendo archivo 1...';
   asig2Base = await leerArchivo(file);
   document.getElementById('lbl2a').innerHTML='✅ <strong>'+file.name+'</strong> ('+asig2Base.length+' registros)';
@@ -976,10 +1040,60 @@ async function cargarBase(file) {
 }
 
 async function cargarInspectores(file) {
+  pushUndoAsig2();
   document.getElementById('statusAsig2').textContent='Leyendo archivo 2...';
   asig2Inspectores = await leerArchivo(file);
   document.getElementById('lbl2b').innerHTML='✅ <strong>'+file.name+'</strong> ('+asig2Inspectores.length+' inspectores)';
   poblarSelectores();
+}
+
+// ===== Deshacer / Limpiar (Asignar Inspectores) =====
+function pushUndoAsig2(){
+  undoAsig2.push(JSON.parse(JSON.stringify({asig2Base, asig2Inspectores, asig2Resultado, asig2InspPorComuna, asig2InspColors})));
+  if(undoAsig2.length>UNDO_MAX) undoAsig2.shift();
+  const b=document.getElementById('btnUndoAsig2'); if(b) b.disabled=false;
+}
+
+function undoAsignacion(){
+  if(!undoAsig2.length){ document.getElementById('statusAsig2').textContent='Nada para deshacer.'; return; }
+  const s=undoAsig2.pop();
+  asig2Base=s.asig2Base; asig2Inspectores=s.asig2Inspectores; asig2Resultado=s.asig2Resultado;
+  asig2InspPorComuna=s.asig2InspPorComuna; asig2InspColors=s.asig2InspColors;
+  if(asig2Base.length && asig2Inspectores.length){
+    poblarSelectores();
+  } else {
+    document.getElementById('asig2-config').style.display='none';
+  }
+  if(!asig2Base.length) document.getElementById('lbl2a').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+  if(!asig2Inspectores.length) document.getElementById('lbl2b').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+  if(asig2Resultado.length){
+    renderAsig2Markers();
+    renderAsig2Summary();
+    document.getElementById('btnDlAsig2').style.display='block';
+    document.getElementById('btnDlKmlAsig2').style.display='block';
+  } else {
+    markers.forEach(m=>map.removeLayer(m)); markers=[];
+    document.getElementById('asig2Summary').innerHTML='';
+    document.getElementById('btnDlAsig2').style.display='none';
+    document.getElementById('btnDlKmlAsig2').style.display='none';
+  }
+  document.getElementById('statusAsig2').textContent='↩️ Deshecho.';
+  document.getElementById('btnUndoAsig2').disabled=!undoAsig2.length;
+}
+
+function limpiarAsig2(){
+  pushUndoAsig2();
+  asig2Base=[]; asig2Inspectores=[]; asig2Resultado=[]; asig2InspPorComuna={}; asig2InspColors={};
+  document.getElementById('fileAsig1').value='';
+  document.getElementById('fileAsig2').value='';
+  document.getElementById('lbl2a').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+  document.getElementById('lbl2b').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+  document.getElementById('asig2-config').style.display='none';
+  document.getElementById('asig2Summary').innerHTML='';
+  document.getElementById('btnDlAsig2').style.display='none';
+  document.getElementById('btnDlKmlAsig2').style.display='none';
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  document.getElementById('statusAsig2').textContent='🗑️ Pestaña limpiada.';
 }
 
 function poblarSelectores() {
@@ -1071,7 +1185,7 @@ async function procesarAsignacion() {
   const colInsp = document.getElementById('a2ColInsp').value;
   const colInspComuna = document.getElementById('a2ColInspComuna').value;
   const colCant = document.getElementById('a2ColCant').value;
-  
+  pushUndoAsig2();
   document.getElementById('btnAsig2').disabled=true;
   markers.forEach(m=>map.removeLayer(m));markers=[];
   
@@ -1340,6 +1454,7 @@ function renderAsig2Summary() {
 // reflejado automáticamente en los archivos que se descarguen después.
 function reasignarAsig2(idx, nuevoInsp) {
   if (!asig2Resultado[idx]) return;
+  pushUndoAsig2();
   asig2Resultado[idx].INSPECTOR_ASIGNADO = nuevoInsp || 'Sin asignar';
   renderAsig2Markers(idx);
   renderAsig2Summary();
@@ -1729,16 +1844,92 @@ async function cargarNorm(file) {
   document.getElementById('normStatusMsg').textContent = 'Leyendo...';
   const rows = await leerArchivo(file);
   if (!rows.length) { document.getElementById('normStatusMsg').textContent = 'Archivo vacío.'; return; }
+  pushUndoNorm();
   normData = rows.map((row, i) => ({_idx:i, _original:'', _normalizada:'', _estado:'pendiente', _coord:null, _point:'', ...row}));
-  const cols = Object.keys(rows[0]);
-  const sel = document.getElementById('normColDir');
-  sel.innerHTML = cols.map(c=>'<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>').join('');
-  const guess = cols.find(c=>/dir|calle|direcc/i.test(c)) || cols[0];
-  if (guess) sel.value = guess;
+  poblarColDirNorm(Object.keys(rows[0]));
   document.getElementById('norm-config').style.display = 'block';
   document.getElementById('normStatusMsg').textContent = rows.length + ' registros cargados.';
   document.getElementById('lblNorm').innerHTML = '✅ <strong>'+escHtml(file.name)+'</strong> ('+rows.length+' registros)';
   updateNormStats();
+}
+
+function poblarColDirNorm(cols){
+  const sel = document.getElementById('normColDir');
+  sel.innerHTML = cols.map(c=>'<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>').join('');
+  const guess = cols.find(c=>/dir|calle|direcc/i.test(c)) || cols[0];
+  if (guess) sel.value = guess;
+}
+
+// ===== Deshacer / Limpiar (Batch) =====
+function pushUndoNorm(){
+  const snap = normData.map(r=>{ const {_marker,...rest}=r; return rest; });
+  undoNorm.push(JSON.parse(JSON.stringify(snap)));
+  if(undoNorm.length>UNDO_MAX) undoNorm.shift();
+  const b=document.getElementById('btnUndoNorm'); if(b) b.disabled=false;
+}
+
+// Redibuja los marcadores del mapa a partir de normData (usado tanto tras procesar
+// como al deshacer, para no depender de referencias de marcador de un estado viejo).
+function redrawNormMarkers(){
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  normData.forEach(row=>{
+    if(row._estado==='ok' && row._coord && row._comuna){
+      const m=L.circleMarker([row._coord.lat,row._coord.lng],{radius:5,fillColor:COLORS[row._comuna]||'#fff',color:'#fff',weight:1.2,fillOpacity:.85}).addTo(map);
+      m.bindPopup('<div class="popup-title">C'+row._comuna+'</div><div class="popup-sub">'+escHtml(row._normalizada||'')+'</div>');
+      markers.push(m);
+      row._marker=m;
+    }
+  });
+}
+
+function undoNormalizacion(){
+  if(!undoNorm.length){ document.getElementById('normStatusMsg').textContent='Nada para deshacer.'; return; }
+  normData = undoNorm.pop();
+  if(normData.length){
+    poblarColDirNorm(Object.keys(normData[0]).filter(k=>!k.startsWith('_')));
+    document.getElementById('norm-config').style.display='block';
+    document.getElementById('normFiltro').style.display = normData.some(r=>r._estado!=='pendiente') ? 'block' : 'none';
+    document.getElementById('normEmptyMsg').style.display='none';
+    document.getElementById('normTable').style.display='table';
+  } else {
+    document.getElementById('norm-config').style.display='none';
+    document.getElementById('lblNorm').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+    document.getElementById('normFiltro').style.display='none';
+    document.getElementById('normEmptyMsg').style.display='block';
+    document.getElementById('normTable').style.display='none';
+  }
+  redrawNormMarkers();
+  renderNormTable();
+  updateNormStats();
+  const hayResultados = normData.some(r=>r._estado==='ok');
+  document.getElementById('btnDlNorm').style.display = hayResultados?'block':'none';
+  document.getElementById('btnDlNormXlsx').style.display = hayResultados?'block':'none';
+  document.getElementById('btnDlNormKml').style.display = hayResultados?'block':'none';
+  document.getElementById('btnNorm').disabled = false;
+  document.getElementById('normProgressBar').style.display = 'none';
+  document.getElementById('normStatusMsg').textContent = '↩️ Deshecho.';
+  document.getElementById('btnUndoNorm').disabled = !undoNorm.length;
+}
+
+function limpiarNorm(){
+  pushUndoNorm();
+  normData=[];
+  document.getElementById('fileNorm').value='';
+  document.getElementById('lblNorm').innerHTML='Arrastrá o <strong>hacé clic aquí</strong>';
+  document.getElementById('norm-config').style.display='none';
+  document.getElementById('normToleranciaVereda').value='10';
+  document.getElementById('normFiltro').value='todos';
+  document.getElementById('normFiltro').style.display='none';
+  document.getElementById('normProgressBar').style.display='none';
+  document.getElementById('normProgressFill').style.width='0%';
+  document.getElementById('normStatusMsg').textContent='🗑️ Pestaña limpiada.';
+  document.getElementById('btnDlNorm').style.display='none';
+  document.getElementById('btnDlNormXlsx').style.display='none';
+  document.getElementById('btnDlNormKml').style.display='none';
+  document.getElementById('btnNorm').disabled=false;
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  updateNormStats();
+  renderNormTable();
 }
 
 function updateNormStats() {
@@ -1754,6 +1945,7 @@ function updateNormStats() {
 
 async function iniciarNormalizacion() {
   if (!normData.length) return;
+  pushUndoNorm();
   const colDir = document.getElementById('normColDir').value;
   document.getElementById('btnNorm').disabled = true;
   document.getElementById('normProgressBar').style.display = 'block';
@@ -1995,6 +2187,7 @@ async function confirmarCorreccion() {
     }
   }
   if (exito) {
+    pushUndoNorm();
     const row = normData[normEditIdx];
     row._estado = 'ok';
     row._normalizada = result.dirNorm || (coordDetectada ? '(sin calle encontrada)' : '');
