@@ -1785,12 +1785,15 @@ async function iniciarNormalizacion() {
       row._comuna = com || '';
       row._barrio = getBarrioLocalBatch(coord.lat, coord.lng);
       row._claveVereda = getClaveVeredaCercana(coord.lat, coord.lng, toleranciaVereda);
+      if (row._marker) { map.removeLayer(row._marker); row._marker = null; }
       if (com) {
         const m = L.circleMarker([coord.lat, coord.lng], {radius:5,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.2,fillOpacity:.85}).addTo(map);
         m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||dir)+'</div>');
         markers.push(m);
+        row._marker = m;
       }
     } else {
+      if (row._marker) { map.removeLayer(row._marker); row._marker = null; }
       row._estado = 'fail';
       row._normalizada = dirNorm || '';
     }
@@ -1898,7 +1901,7 @@ function renderNormTable() {
     const com = row._comuna ? '<span class="cb" style="background:'+(COLORS[row._comuna]||'#666')+';color:#000">'+row._comuna+'</span>' : '<span style="color:var(--muted)">—</span>';
     const bar = row._barrio ? '<span style="font-size:10px">'+escHtml(row._barrio)+'</span>' : '<span style="color:var(--muted)">—</span>';
     const cv = row._claveVereda ? '<span style="font-family:monospace;font-size:9px;color:var(--muted)">'+escHtml(row._claveVereda)+'</span>' : '<span style="color:var(--muted)">—</span>';
-    const editBtn = row._estado === 'fail' ? '<button onclick="abrirModalNorm('+row._idx+')" style="background:var(--accent2);border:none;border-radius:5px;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer">✏️</button>' : '';
+    const editBtn = '<button onclick="abrirModalNorm('+row._idx+')" title="Editar dirección" style="background:var(--accent2);border:none;border-radius:5px;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer">✏️</button>';
     const badge = row._estado === 'ok' ? '✅' : '❌';
     return '<tr style="border-bottom:1px solid var(--border)">'
       +'<td style="color:var(--muted);font-family:monospace;font-size:10px;padding:5px 6px">'+(row._idx+1)+'</td>'
@@ -1917,6 +1920,14 @@ function abrirModalNorm(idx) {
   const row = normData[idx];
   const colDir = document.getElementById('normColDir').value;
   document.getElementById('modalOriginal').textContent = 'Original: ' + (row._original || row[colDir] || '');
+  const actual = document.getElementById('modalActual');
+  if (row._estado === 'ok') {
+    actual.textContent = 'Actualmente: ' + (row._normalizada || '—') + (row._comuna ? ' · Comuna '+row._comuna : '') + (row._barrio ? ' · '+row._barrio : '');
+    actual.style.display = 'block';
+  } else {
+    actual.textContent = '';
+    actual.style.display = 'none';
+  }
   document.getElementById('modalInput').value = row._original || String(row[colDir]||'');
   document.getElementById('modalMsg').textContent = '';
   document.getElementById('modalSuggestions').style.display = 'none';
@@ -1994,10 +2005,12 @@ async function confirmarCorreccion() {
     row._barrio = getBarrioLocalBatch(result.coord.lat, result.coord.lng);
     const toleranciaVereda = parseFloat(document.getElementById('normToleranciaVereda').value) || 10;
     row._claveVereda = getClaveVeredaCercana(result.coord.lat, result.coord.lng, toleranciaVereda);
+    if (row._marker) { map.removeLayer(row._marker); row._marker = null; }
     if (com) {
       const m = L.circleMarker([result.coord.lat, result.coord.lng],{radius:6,fillColor:COLORS[com]||'#fff',color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map);
       m.bindPopup('<div class="popup-title">C'+com+'</div><div class="popup-sub">'+escHtml(row._normalizada||newDir)+'</div>');
       markers.push(m);
+      row._marker = m;
     }
     updateNormStats(); renderNormTable();
     document.getElementById('btnDlNorm').style.display = 'block';
@@ -2095,7 +2108,8 @@ document.addEventListener('keydown', e => {
 <div id="normModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:360px;max-width:95%">
     <div style="font-size:13px;font-weight:700;margin-bottom:4px">✏️ Corregir dirección</div>
-    <div id="modalOriginal" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+    <div id="modalOriginal" style="font-size:11px;color:var(--muted);margin-bottom:2px"></div>
+    <div id="modalActual" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
     <div style="position:relative;margin-bottom:8px">
       <input id="modalInput" type="text" placeholder="Escribí la dirección corregida" autocomplete="off"
         style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none"
