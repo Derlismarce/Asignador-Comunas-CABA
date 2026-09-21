@@ -1729,6 +1729,24 @@ const normalizadorLocalBatch = {
           if (altura >= st.rangos[r][0] && altura <= st.rangos[r][1]) { best = st; alturaValida = true; break busqueda; }
         }
       }
+      // El match exacto por key puede no traer TODAS las calles con ese nombre: "URIBURU"
+      // matchea la calle corta (rango 801-900), pero "URIBURU, JOSE E., PRES." (rango
+      // 1-1800) no tiene "URIBURU" solo como key, así que nunca aparece en `matches`. Si la
+      // altura no vale para ninguna de las exactas, se suman las candidatas por palabras
+      // antes de darla por inválida.
+      if (!alturaValida) {
+        const porPalabras = this.buscarPorPalabras(callePart);
+        if (porPalabras) {
+          busqueda2:
+          for (let i = 0; i < porPalabras.length; i++) {
+            const st = porPalabras[i];
+            if (matches.includes(st)) continue;
+            for (let r = 0; r < (st.rangos || []).length; r++) {
+              if (altura >= st.rangos[r][0] && altura <= st.rangos[r][1]) { best = st; alturaValida = true; break busqueda2; }
+            }
+          }
+        }
+      }
     }
     return {
       status: (altura === null || alturaValida) ? 'OK' : 'ALTURA_INVALIDA',
