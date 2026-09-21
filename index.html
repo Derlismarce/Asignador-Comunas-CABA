@@ -1598,6 +1598,7 @@ async function resolverDesdeCoordenadas(coord) {
 const normalizadorLocalBatch = {
   keyMap: null,
   allKeys: null,
+  wordIndex: null,
   init() {
     if (this.keyMap) return;
     this.keyMap = new Map();
@@ -1608,6 +1609,19 @@ const normalizadorLocalBatch = {
       });
     });
     this.allKeys = Array.from(this.keyMap.keys());
+    // Índice palabra -> keys que la contienen. Las claves del callejero suelen exigir
+    // el nombre completo ("VERTIZ VIRREY", "SANCHEZ DE BUSTAMANTE", "PERON JUAN DOMINGO
+    // TTE"), pero en la práctica la gente escribe solo el apellido, en otro orden, o con
+    // inicial ("J SALGUERO"). Esto permite matchear por palabras en vez de exigir el
+    // string completo.
+    this.wordIndex = new Map();
+    this.allKeys.forEach(k => {
+      k.split(' ').forEach(w => {
+        if (!w) return;
+        if (!this.wordIndex.has(w)) this.wordIndex.set(w, new Set());
+        this.wordIndex.get(w).add(k);
+      });
+    });
   },
   normalizeText(text) {
     if (!text) return '';
@@ -1629,6 +1643,60 @@ const normalizadorLocalBatch = {
     }
     return prev[prev.length - 1];
   },
+  // Busca por conjunto de palabras: exige que todas las palabras "fuertes" (3+ letras)
+  // del texto ingresado estén en la key candidata (en cualquier orden), y que las
+  // palabras sueltas de 1-2 letras que sobren coincidan como inicial de alguna palabra
+  // restante de la key (para casos como "J SALGUERO" -> "JERONIMO SALGUERO"). La key
+  // puede tener palabras de más (conectores como "DE", títulos como "PRES", sinónimos
+  // como "AV"/"AVENIDA") sin que eso la descarte, solo penaliza el puntaje. Devuelve
+  // varias calles candidatas (no una sola) para que normalizar() pueda desempatar por
+  // la altura, igual que ya hace con las keys exactas.
+  // Palabras genéricas (abreviadas o completas) que aparecen en muchísimas keys del
+  // callejero y no sirven para acotar candidatos: si se exigen literal pueden hacer
+  // fallar el match cuando el usuario las agrega/omite de más (ej. "RODO AV 6400"
+  // cuando la calle real no es avenida). Se ignoran para buscar candidatos.
+  PALABRAS_CONECTORAS: new Set(['AV','AVD','AVDA','AVENIDA','GRAL','GENERAL','PRES','PRESIDENTE','PTE','DE','DEL','LA','LOS','LAS','DR','DRA','DOCTOR','TTE','TENIENTE','CNEL','CORONEL','MCAL','MARISCAL','ING','INGENIERO','SGTO','SARGENTO','CAP','CAPITAN','ALTE','ALMIRANTE','BME']),
+  buscarPorPalabras(callePart) {
+    const queryWords = callePart.split(' ').filter(Boolean);
+    const strongWords = queryWords.filter(w => w.length >= 3 && !this.PALABRAS_CONECTORAS.has(w));
+    if (!strongWords.length) return null;
+    let candidateKeys = null;
+    for (const w of strongWords) {
+      const set = this.wordIndex.get(w);
+      if (!set || !set.size) return null;
+      candidateKeys = candidateKeys ? new Set([...candidateKeys].filter(k => set.has(k))) : new Set(set);
+      if (!candidateKeys.size) return null;
+    }
+    const scored = [];
+    for (const key of candidateKeys) {
+      const keyWords = key.split(' ');
+      const usedIdx = new Set();
+      strongWords.forEach(w => {
+        const i = keyWords.findIndex((kw, idx) => kw === w && !usedIdx.has(idx));
+        if (i >= 0) usedIdx.add(i);
+      });
+      let ok = true, iniciales = 0;
+      for (const w of queryWords) {
+        if (w.length >= 3 || this.PALABRAS_CONECTORAS.has(w)) continue;
+        const idx = keyWords.findIndex((kw, i) => !usedIdx.has(i) && kw[0] === w[0]);
+        if (idx === -1) { ok = false; break; }
+        usedIdx.add(idx); iniciales++;
+      }
+      if (!ok) continue;
+      const extra = keyWords.length - usedIdx.size;
+      scored.push({ key, score: extra * 2 + iniciales });
+    }
+    if (!scored.length) return null;
+    scored.sort((a, b) => a.score - b.score);
+    const vistos = new Set(), resultado = [];
+    for (const { key } of scored) {
+      for (const c of (this.keyMap.get(key) || [])) {
+        if (!vistos.has(c)) { vistos.add(c); resultado.push(c); }
+      }
+      if (resultado.length >= 6) break;
+    }
+    return resultado.length ? resultado : null;
+  },
   normalizar(direccionStr) {
     this.init();
     if (!direccionStr || !String(direccionStr).trim()) return { status: 'VACIO' };
@@ -1637,6 +1705,9 @@ const normalizadorLocalBatch = {
     let callePart = rawNorm, altura = null;
     if (m) { callePart = m[1]; altura = parseInt(m[2], 10); }
     let matches = this.keyMap.get(callePart);
+    if (!matches || !matches.length) {
+      matches = this.buscarPorPalabras(callePart);
+    }
     if ((!matches || !matches.length) && callePart.length >= 4) {
       let bestDist = 99, bestKey = null;
       for (let i = 0; i < this.allKeys.length; i++) {
@@ -2054,14 +2125,23 @@ async function iniciarNormalizacion() {
   }
   if (filasCoord.length) renderNormTable();
 
-  // Paso 4: lo que el motor local no pudo resolver, fallback de red 1 a 1 (mismo
-  // comportamiento que ya funcionaba antes de este cambio).
-  for (const { row, dir } of sinCodigo) {
-    const result = await normalizeAndGeocode(dir);
-    aplicarResultado(row, dir, result.dirNorm, result.coord, !!(result.coord && result.dirNorm));
-    hechos++; avisar();
-    if (hechos % 5 === 0) await new Promise(r => setTimeout(r, 50));
+  // Paso 4: lo que el motor local no pudo resolver, fallback de red — antes iba de a
+  // una (secuencial), ahora en paralelo con el mismo mecanismo de 6 workers que el
+  // paso 2, así un archivo con muchas direcciones "raras" no tarda muchísimo más.
+  let siguienteSinCodigo = 0;
+  let sinCodigoHechos = 0;
+  async function trabajadorSinCodigo() {
+    while (siguienteSinCodigo < sinCodigo.length) {
+      const idx = siguienteSinCodigo++;
+      const { row, dir } = sinCodigo[idx];
+      const result = await normalizeAndGeocode(dir);
+      aplicarResultado(row, dir, result.dirNorm, result.coord, !!(result.coord && result.dirNorm));
+      hechos++; sinCodigoHechos++;
+      if (sinCodigoHechos % 5 === 0) { avisar(); renderNormTable(); }
+    }
   }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCIA, sinCodigo.length) }, trabajadorSinCodigo));
+  if (sinCodigo.length) avisar();
 
   renderNormTable();
   const ok = normData.filter(r=>r._estado==='ok').length;
