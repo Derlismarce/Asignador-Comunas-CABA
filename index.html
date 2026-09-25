@@ -340,12 +340,17 @@ const CARTO_KEY = atob('Y2IxXzI3dWlfMV9jOTg4MDc2YjUxYTY0MmRlMDRkODAwYzU=');
 // Inicializar mapa
 const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([-34.615,-58.44],12);
 map.attributionControl.setPrefix(false);
+// Mapa base: CARTO (dark_all / light_all según el tema) para los dos modos. Antes el
+// modo claro usaba tile.openstreetmap.org directo, y OSM terminó bloqueando la app por
+// su política de uso para servidores de voluntarios (mismo problema ya resuelto así en
+// el proyecto Generador de Recorridos KML).
 // detectRetina: si la pantalla tiene devicePixelRatio > 1 (por escalado de Windows al
 // 125%/150%, o una pantalla HiDPI), Leaflet pide la variante @2x de cada tile (el molde
 // de la URL ya tiene el placeholder {r} para eso) en vez de escalar por CSS una imagen
 // pensada para 1x — esa escalada de más es la que deja una línea fina visible entre
 // baldosas adyacentes.
-const baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=' + CARTO_KEY,{maxZoom:19, detectRetina:true, attribution:'&copy; <a href="https://carto.com/">CARTO</a>'}).addTo(map);
+const CARTO_ATTR = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>';
+const baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=' + CARTO_KEY,{maxZoom:19, detectRetina:true, attribution:CARTO_ATTR}).addTo(map);
 
 // ===== RESIZE DEL PANEL LATERAL =====
 (function(){
@@ -418,20 +423,10 @@ function toggleComunasOverlay(ocultar) {
 }
 
 // Toggle de modo claro/oscuro (switch del header)
-const ATTR_CARTO = '&copy; <a href="https://carto.com/">CARTO</a>';
-const ATTR_OSM = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 function toggleTheme(claro) {
   document.body.classList.toggle('light-mode', claro);
   try { localStorage.setItem('theme', claro ? 'light' : 'dark'); } catch(e) {}
-  if (claro) {
-    map.attributionControl.removeAttribution(ATTR_CARTO);
-    map.attributionControl.addAttribution(ATTR_OSM);
-    baseTileLayer.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
-  } else {
-    map.attributionControl.removeAttribution(ATTR_OSM);
-    map.attributionControl.addAttribution(ATTR_CARTO);
-    baseTileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=' + CARTO_KEY);
-  }
+  baseTileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/' + (claro ? 'light_all' : 'dark_all') + '/{z}/{x}/{y}{r}.png?key=' + CARTO_KEY);
   geojsonLayer.setStyle(comunaStyle);
 }
 (function(){
