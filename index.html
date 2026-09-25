@@ -62,9 +62,13 @@ body.light-mode .upload-zone:hover, body.light-mode .upload-zone.drag { backgrou
 #map { position: absolute; inset: 0; }
 /* Chrome compone cada tile del mapa en su propia capa GPU con antialiasing en el
    borde; eso deja una línea fina visible entre baldosas (más notorio en el mapa
-   oscuro por el contraste). Forzar backface-visibility evita ese antialiasing de
-   borde sin afectar la nitidez del tile. Bug conocido de Leaflet + Chrome. */
+   oscuro por el contraste, y en pantallas con escalado no entero). backface-visibility
+   evita el antialiasing de borde. El agrandado de 0.6px (mismo valor ya probado en
+   Visor KML Dashboard) hace que cada baldosa se solape apenas con la vecina y tape el
+   hueco de subpíxel que quede — a diferencia de un solapado de 1px entero, que se nota
+   demasiado y empeora el efecto. */
 .leaflet-tile { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.leaflet-tile-container img.leaflet-tile { width: 256.6px !important; height: 256.6px !important; mix-blend-mode: normal; }
 .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .tab { flex: 1; padding: 11px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .2s; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
