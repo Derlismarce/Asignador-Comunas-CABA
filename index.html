@@ -60,6 +60,11 @@ body.light-mode .upload-zone:hover, body.light-mode .upload-zone.drag { backgrou
 .resizer::after { content: ''; position: absolute; top: 0; bottom: 0; left: -3px; right: -3px; }
 .map-area { flex: 1; position: relative; min-width: 0; }
 #map { position: absolute; inset: 0; }
+/* Chrome compone cada tile del mapa en su propia capa GPU con antialiasing en el
+   borde; eso deja una línea fina visible entre baldosas (más notorio en el mapa
+   oscuro por el contraste). Forzar backface-visibility evita ese antialiasing de
+   borde sin afectar la nitidez del tile. Bug conocido de Leaflet + Chrome. */
+.leaflet-tile { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .tab { flex: 1; padding: 11px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .2s; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
